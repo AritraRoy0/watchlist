@@ -12,4 +12,3 @@ export const auth = {
     localStorage.removeItem(TOKEN_KEY);
   },
 };
-s
