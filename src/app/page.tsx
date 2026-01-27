@@ -1,9 +1,17 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { login, register } from "@/lib/api";
 import { auth } from "@/lib/auth";
+import {
+  Mail,
+  Lock,
+  User,
+  Eye,
+  EyeOff,
+  Loader2,
+} from "lucide-react";
 
 type Mode = "login" | "register";
 
@@ -15,46 +23,29 @@ export default function HomePage() {
   const router = useRouter();
 
   const [mode, setMode] = useState<Mode>("register");
-
-  // Shared fields
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
-  // Register-only field (optional)
   const [fullName, setFullName] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const title = useMemo(
-    () => (mode === "register" ? "Create your account" : "Welcome back"),
-    [mode]
-  );
+  const emailValid = isEmail(email);
+  const passwordValid = password.length >= 6;
 
-  const subtitle = useMemo(
-    () =>
-      mode === "register"
-        ? "Sign up to start building your watchlist."
-        : "Log in to manage your watchlist.",
-    [mode]
-  );
-
-  const canSubmit = useMemo(() => {
-    if (!isEmail(email)) return false;
-    if (password.trim().length < 6) return false;
-    if (mode === "register" && fullName.trim().length > 0 && fullName.trim().length < 2)
-      return false;
-    return true;
-  }, [email, password, fullName, mode]);
+  const canSubmit =
+    emailValid &&
+    passwordValid &&
+    (mode === "login" ||
+      fullName.trim().length === 0 ||
+      fullName.trim().length >= 2);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
 
-    if (!canSubmit) {
-      setError("Please enter a valid email and a password of at least 6 characters.");
-      return;
-    }
+    if (!canSubmit) return;
 
     setLoading(true);
     try {
@@ -66,163 +57,158 @@ export default function HomePage() {
       auth.setToken(result.token);
       router.push("/watchlist");
     } catch (err: any) {
-      setError(err?.message || "Something went wrong. Please try again.");
+      setError(err?.message || "Authentication failed.");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-zinc-950 to-zinc-900 text-zinc-100">
-      <div className="mx-auto flex min-h-screen max-w-5xl items-center justify-center px-4 py-10">
-        <div className="grid w-full gap-6 md:grid-cols-2">
-          {/* Left: Brand / copy */}
-          <section className="rounded-2xl border border-zinc-800 bg-zinc-950/40 p-8 shadow-lg">
-            <div className="inline-flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-950 px-3 py-1 text-sm text-zinc-300">
-              <span className="h-2 w-2 rounded-full bg-emerald-400" />
-              Watchlist Tracker
-            </div>
-
-            <h1 className="mt-6 text-3xl font-semibold tracking-tight">
-              Keep every recommendation in one place.
-            </h1>
-            <p className="mt-3 text-zinc-300">
-              Save movies and shows, mark them watched, add ratings and notes, and
-              filter your list fast.
-            </p>
-
-            <ul className="mt-6 space-y-3 text-sm text-zinc-300">
-              <li className="flex gap-3">
-                <span className="mt-1 h-2 w-2 rounded-full bg-zinc-500" />
-                Create, update, and delete watchlist items
-              </li>
-              <li className="flex gap-3">
-                <span className="mt-1 h-2 w-2 rounded-full bg-zinc-500" />
-                Track watched status, ratings, and personal notes
-              </li>
-              <li className="flex gap-3">
-                <span className="mt-1 h-2 w-2 rounded-full bg-zinc-500" />
-                Smart filters by type and status
-              </li>
-            </ul>
-
-            <div className="mt-8 rounded-xl border border-zinc-800 bg-zinc-950 p-4 text-xs text-zinc-400">
-              Tip: Set <span className="font-mono">NEXT_PUBLIC_API_BASE_URL</span> in{" "}
-              <span className="font-mono">.env.local</span> for local dev and in Vercel
-              for deployment.
-            </div>
-          </section>
-
-          {/* Right: Auth card */}
-          <section className="rounded-2xl border border-zinc-800 bg-zinc-950 p-8 shadow-lg">
-            {/* Mode switch */}
-            <div className="flex rounded-xl border border-zinc-800 bg-zinc-900/40 p-1">
-              <button
-                type="button"
-                onClick={() => {
-                  setMode("register");
-                  setError(null);
-                }}
-                className={[
-                  "flex-1 rounded-lg px-4 py-2 text-sm font-medium transition",
-                  mode === "register"
-                    ? "bg-zinc-950 text-zinc-100"
-                    : "text-zinc-300 hover:text-zinc-100",
-                ].join(" ")}
-              >
-                Register
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setMode("login");
-                  setError(null);
-                }}
-                className={[
-                  "flex-1 rounded-lg px-4 py-2 text-sm font-medium transition",
-                  mode === "login"
-                    ? "bg-zinc-950 text-zinc-100"
-                    : "text-zinc-300 hover:text-zinc-100",
-                ].join(" ")}
-              >
-                Login
-              </button>
-            </div>
-
-            <h2 className="mt-6 text-2xl font-semibold">{title}</h2>
-            <p className="mt-2 text-sm text-zinc-300">{subtitle}</p>
-
-            <form onSubmit={onSubmit} className="mt-6 space-y-4">
-              {mode === "register" && (
-                <div>
-                  <label className="mb-1 block text-sm text-zinc-300">
-                    Full name <span className="text-zinc-500">(optional)</span>
-                  </label>
-                  <input
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    autoComplete="name"
-                    className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-zinc-100 placeholder:text-zinc-600 outline-none focus:border-zinc-600"
-                    placeholder="Roy Mazumder"
-                  />
-                </div>
-              )}
-
-              <div>
-                <label className="mb-1 block text-sm text-zinc-300">Email</label>
-                <input
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  autoComplete="email"
-                  inputMode="email"
-                  className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-zinc-100 placeholder:text-zinc-600 outline-none focus:border-zinc-600"
-                  placeholder="you@example.com"
-                />
-              </div>
-
-              <div>
-                <label className="mb-1 block text-sm text-zinc-300">Password</label>
-                <input
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  autoComplete={mode === "register" ? "new-password" : "current-password"}
-                  type="password"
-                  className="w-full rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-zinc-100 placeholder:text-zinc-600 outline-none focus:border-zinc-600"
-                  placeholder="At least 6 characters"
-                />
-              </div>
-
-              {error && (
-                <div className="rounded-xl border border-red-900/40 bg-red-950/40 px-4 py-3 text-sm text-red-200">
-                  {error}
-                </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={loading || !canSubmit}
-                className={[
-                  "w-full rounded-xl px-4 py-3 text-sm font-semibold transition",
-                  "border border-zinc-800",
-                  loading || !canSubmit
-                    ? "cursor-not-allowed bg-zinc-900 text-zinc-500"
-                    : "bg-zinc-100 text-zinc-950 hover:bg-white",
-                ].join(" ")}
-              >
-                {loading
-                  ? "Please wait..."
-                  : mode === "register"
-                  ? "Create account"
-                  : "Log in"}
-              </button>
-
-              <p className="text-center text-xs text-zinc-400">
-                By continuing, you agree to store your session token locally for this demo.
-              </p>
-            </form>
-          </section>
+    <main className="flex min-h-screen items-center justify-center bg-white px-4 text-black">
+      <div className="w-full max-w-md rounded-2xl border border-black/10 bg-white p-8 shadow-sm">
+        {/* Header */}
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl font-semibold tracking-tight">
+            Watchlist
+          </h1>
+          <p className="mt-2 text-sm text-black/60">
+            {mode === "register"
+              ? "Create an account to track what to watch"
+              : "Log in to your watchlist"}
+          </p>
         </div>
+
+        {/* Toggle */}
+        <div className="mb-6 grid grid-cols-2 rounded-lg border border-black/10 p-1">
+          {(["register", "login"] as Mode[]).map((m) => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => {
+                setMode(m);
+                setError(null);
+              }}
+              className={`rounded-md py-2 text-sm font-medium transition-all ${
+                mode === m
+                  ? "bg-black text-white"
+                  : "text-black/60 hover:text-black"
+              }`}
+            >
+              {m === "register" ? "Sign up" : "Log in"}
+            </button>
+          ))}
+        </div>
+
+        {/* Form */}
+        <form onSubmit={onSubmit} className="space-y-4">
+          {mode === "register" && (
+            <Field
+              icon={<User size={18} />}
+              value={fullName}
+              onChange={setFullName}
+              placeholder="Full name (optional)"
+            />
+          )}
+
+          <Field
+            icon={<Mail size={18} />}
+            value={email}
+            onChange={setEmail}
+            placeholder="Email"
+            error={
+              email.length > 0 && !emailValid
+                ? "Please enter a valid email"
+                : undefined
+            }
+          />
+
+          <Field
+            icon={<Lock size={18} />}
+            value={password}
+            onChange={setPassword}
+            placeholder="Password (min 6 characters)"
+            type={showPassword ? "text" : "password"}
+            error={
+              password.length > 0 && !passwordValid
+                ? "Password must be at least 6 characters"
+                : undefined
+            }
+            rightIcon={
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                className="text-black/40 hover:text-black"
+              >
+                {showPassword ? (
+                  <EyeOff size={16} />
+                ) : (
+                  <Eye size={16} />
+                )}
+              </button>
+            }
+          />
+
+          {error && (
+            <div className="rounded-md border border-black/10 bg-black/5 px-3 py-2 text-sm">
+              {error}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={!canSubmit || loading}
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-black py-3 text-sm font-semibold text-white transition disabled:opacity-50"
+          >
+            {loading && (
+              <Loader2 size={16} className="animate-spin" />
+            )}
+            {mode === "register" ? "Create account" : "Log in"}
+          </button>
+        </form>
+
+        <p className="mt-6 text-center text-xs text-black/50">
+          Session stored locally for demo purposes
+        </p>
       </div>
     </main>
+  );
+}
+
+/* ---------- Reusable Input Field ---------- */
+
+function Field({
+  icon,
+  rightIcon,
+  value,
+  onChange,
+  placeholder,
+  type = "text",
+  error,
+}: {
+  icon: React.ReactNode;
+  rightIcon?: React.ReactNode;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+  type?: string;
+  error?: string;
+}) {
+  return (
+    <div>
+      <div className="flex items-center gap-2 rounded-lg border border-black/10 px-3 py-2 focus-within:border-black">
+        <span className="text-black/40">{icon}</span>
+        <input
+          type={type}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          className="w-full bg-transparent text-sm outline-none placeholder:text-black/40"
+        />
+        {rightIcon}
+      </div>
+      {error && (
+        <p className="mt-1 text-xs text-black/60">{error}</p>
+      )}
+    </div>
   );
 }
