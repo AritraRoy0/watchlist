@@ -6,7 +6,12 @@ function getBaseUrl() {
   if (!url) {
     throw new Error("NEXT_PUBLIC_API_BASE_URL is not defined");
   }
-  return url;
+  if (!/^https?:\/\//i.test(url)) {
+    throw new Error(
+      "NEXT_PUBLIC_API_BASE_URL must include http(s):// (e.g. http://ec2-54-242-212-23.compute-1.amazonaws.com:4000)"
+    );
+  }
+  return url.replace(/\/+$/, "");
 }
 
 function headers() {
@@ -18,7 +23,7 @@ function headers() {
 }
 
 export async function login(email: string, password: string) {
-  const res = await fetch(`${getBaseUrl()}/login`, {
+  const res = await fetch(`${getBaseUrl()}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
@@ -33,7 +38,7 @@ export async function register(
   password: string,
   fullName?: string
 ) {
-  const res = await fetch(`${getBaseUrl()}/register`, {
+  const res = await fetch(`${getBaseUrl()}/auth/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password, fullName }),
