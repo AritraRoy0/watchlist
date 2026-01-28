@@ -4,11 +4,11 @@ import { auth } from "./auth";
 function getBaseUrl() {
   const url = process.env.NEXT_PUBLIC_API_BASE_URL;
   if (!url) {
-    throw new Error("NEXT_PUBLIC_API_BASE_URL is not defined");
+    return "/api";
   }
-  if (!/^https?:\/\//i.test(url)) {
+  if (!/^https?:\/\//i.test(url) && !url.startsWith("/")) {
     throw new Error(
-      "NEXT_PUBLIC_API_BASE_URL must include http(s):// (e.g. http://ec2-54-242-212-23.compute-1.amazonaws.com:4000)"
+      "NEXT_PUBLIC_API_BASE_URL must include http(s):// or start with / (e.g. /api or http://ec2-54-242-212-23.compute-1.amazonaws.com:4000)"
     );
   }
   return url.replace(/\/+$/, "");
