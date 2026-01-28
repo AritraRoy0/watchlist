@@ -18,7 +18,7 @@ function headers() {
 }
 
 export async function login(email: string, password: string) {
-  const res = await fetch(`${getBaseUrl()}/auth/login`, {
+  const res = await fetch(`${getBaseUrl()}/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
@@ -33,7 +33,7 @@ export async function register(
   password: string,
   fullName?: string
 ) {
-  const res = await fetch(`${getBaseUrl()}/auth/register`, {
+  const res = await fetch(`${getBaseUrl()}/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password, fullName }),
