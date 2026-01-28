@@ -8,7 +8,7 @@ function getTargetBase() {
   return target.replace(/\/+$/, "");
 }
 
-function authHeader(req: Request) {
+function authHeader(req: Request): HeadersInit {
   const header = req.headers.get("authorization");
   return header ? { Authorization: header } : {};
 }
@@ -17,7 +17,7 @@ export async function GET(req: Request) {
   try {
     const res = await fetch(`${getTargetBase()}/watchlist`, {
       method: "GET",
-      headers: { ...authHeader(req) },
+      headers: authHeader(req),
     });
 
     const payload = await res.text();

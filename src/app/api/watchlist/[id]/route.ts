@@ -8,17 +8,20 @@ function getTargetBase() {
   return target.replace(/\/+$/, "");
 }
 
-function authHeader(req: Request) {
+function authHeader(req: Request): HeadersInit {
   const header = req.headers.get("authorization");
   return header ? { Authorization: header } : {};
 }
 
-export async function DELETE(req: Request, context: { params: { id: string } }) {
+export async function DELETE(
+  req: Request,
+  context: { params: Promise<{ id: string }> }
+) {
   try {
-    const { id } = context.params;
+    const { id } = await context.params;
     const res = await fetch(`${getTargetBase()}/watchlist/${id}`, {
       method: "DELETE",
-      headers: { ...authHeader(req) },
+      headers: authHeader(req),
     });
 
     const payload = await res.text();
