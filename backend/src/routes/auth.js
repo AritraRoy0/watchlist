@@ -36,6 +36,7 @@ router.post("/register", async (req, res) => {
     if (err?.code === "ER_DUP_ENTRY") {
       return res.status(409).json({ error: "Email already exists" });
     }
+    console.error("Register failed:", err);
     return res.status(500).json({ error: "Registration failed" });
   }
 });
@@ -64,7 +65,8 @@ router.post("/login", async (req, res) => {
 
     const token = issueToken(user.id);
     return res.json({ token });
-  } catch {
+  } catch (err) {
+    console.error("Login failed:", err);
     return res.status(500).json({ error: "Login failed" });
   }
 });
