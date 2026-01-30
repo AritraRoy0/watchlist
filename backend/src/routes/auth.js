@@ -1,11 +1,13 @@
 import { Router } from "express";
-import { randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { pool } from "../db.js";
 
 const router = Router();
 const secret = process.env.JWT_SECRET;
+if (!secret) {
+  throw new Error("JWT_SECRET is not set");
+}
 
 function issueToken(userId) {
   return jwt.sign({ sub: userId }, secret, { expiresIn: "7d" });
@@ -19,25 +21,18 @@ router.post("/register", async (req, res) => {
 
   try {
     const passwordHash = await bcrypt.hash(password, 10);
-    console.log(1)
-    const userId = randomUUID();
-    console.log(2)
-    await pool.execute(
-      "INSERT INTO users (id, email, full_name, password_hash) VALUES (?, ?, ?, ?)",
-      [userId, email.toLowerCase(), fullName, passwordHash || null]
+    const [result] = await pool.execute(
+      "INSERT INTO users (email, full_name, password_hash) VALUES (?, ?, ?)",
+      [email.toLowerCase(), fullName || null, passwordHash]
     );
-    console.log(3)
 
+    const userId = result.insertId;
     const token = issueToken(userId);
-    console.log(4)
     return res.json({ token });
   } catch (err) {
     if (err?.code === "ER_DUP_ENTRY") {
       return res.status(409).json({ error: "Email already exists" });
     }
-    console.log(email)
-    console.log(email)
-    console.log(email)
     return res.status(500).json({ error: "Registration failed" });
   }
 });
