@@ -23,8 +23,8 @@ router.post("/register", async (req, res) => {
     const userId = randomUUID();
     console.log(2)
     await pool.execute(
-      "INSERT INTO users (id, email, password_hash, full_name) VALUES (?, ?, ?, ?)",
-      [userId, email.toLowerCase(), passwordHash, fullName || null]
+      "INSERT INTO users (id, email, full_name, password_hash) VALUES (?, ?, ?, ?)",
+      [userId, email.toLowerCase(), fullName, passwordHash || null]
     );
     console.log(3)
 
