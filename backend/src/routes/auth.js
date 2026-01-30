@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { pool } from "../db.js";
@@ -18,12 +19,12 @@ router.post("/register", async (req, res) => {
 
   try {
     const passwordHash = await bcrypt.hash(password, 10);
-    const [result] = await pool.execute(
-      "INSERT INTO users (email, password_hash, full_name) VALUES (?, ?, ?)",
-      [email.toLowerCase(), passwordHash, fullName || null]
+    const userId = randomUUID();
+    await pool.execute(
+      "INSERT INTO users (id, email, password_hash, full_name) VALUES (?, ?, ?, ?)",
+      [userId, email.toLowerCase(), passwordHash, fullName || null]
     );
 
-    const userId = result.insertId;
     const token = issueToken(userId);
     return res.json({ token });
   } catch (err) {
