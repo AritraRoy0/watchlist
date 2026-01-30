@@ -30,9 +30,10 @@ export async function DELETE(
       headers: { "Content-Type": res.headers.get("Content-Type") || "application/json" },
     });
   } catch (err: any) {
+    console.error("Proxy /watchlist DELETE failed:", err);
     return NextResponse.json(
       { error: err?.message || "Proxy failed" },
-      { status: 500 }
+      { status: 502 }
     );
   }
 }

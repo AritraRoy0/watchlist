@@ -23,9 +23,10 @@ export async function POST(req: Request) {
       headers: { "Content-Type": res.headers.get("Content-Type") || "application/json" },
     });
   } catch (err: any) {
+    console.error("Proxy /auth/register failed:", err);
     return NextResponse.json(
       { error: err?.message || "Proxy failed" },
-      { status: 500 }
+      { status: 502 }
     );
   }
 }

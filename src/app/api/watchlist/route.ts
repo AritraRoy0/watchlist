@@ -26,9 +26,10 @@ export async function GET(req: Request) {
       headers: { "Content-Type": res.headers.get("Content-Type") || "application/json" },
     });
   } catch (err: any) {
+    console.error("Proxy /watchlist GET failed:", err);
     return NextResponse.json(
       { error: err?.message || "Proxy failed" },
-      { status: 500 }
+      { status: 502 }
     );
   }
 }
@@ -51,9 +52,10 @@ export async function POST(req: Request) {
       headers: { "Content-Type": res.headers.get("Content-Type") || "application/json" },
     });
   } catch (err: any) {
+    console.error("Proxy /watchlist POST failed:", err);
     return NextResponse.json(
       { error: err?.message || "Proxy failed" },
-      { status: 500 }
+      { status: 502 }
     );
   }
 }
