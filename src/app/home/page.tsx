@@ -3,24 +3,14 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { auth } from "@/lib/auth";
-import { getWatchlist } from "@/lib/api";
+import { getWatchlist, WatchlistItem } from "@/lib/api";
 import { Plus, LogOut } from "lucide-react";
-
-type WatchlistItem = {
-  id: number;
-  title: string;
-  content_type: "movie" | "tv";
-  status: "want_to_watch" | "watched";
-  rating: number | null;
-  notes: string | null;
-};
 
 export default function HomePage() {
   const router = useRouter();
   const [items, setItems] = useState<WatchlistItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Auth guard + initial load
   useEffect(() => {
     if (!auth.getToken()) {
       router.push("/");
@@ -32,7 +22,6 @@ export default function HomePage() {
         const data = await getWatchlist();
         setItems(data);
       } catch {
-        // token invalid or API error
         auth.clearToken();
         router.push("/");
       } finally {
