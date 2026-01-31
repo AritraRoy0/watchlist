@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { auth } from "@/lib/auth";
-import { getWatchlist, WatchlistItem } from "@/lib/api";
+import { getWatchlist } from "@/lib/api";
+import type { WatchlistItem } from "@/types/watchlist";
 import { Plus, LogOut } from "lucide-react";
 
 export default function HomePage() {
@@ -70,7 +71,7 @@ export default function HomePage() {
         {/* Content */}
         {loading ? (
           <div className="text-center text-zinc-400 py-20">
-            Loading your watchlist…
+            Loading your watchlist...
           </div>
         ) : items.length === 0 ? (
           <EmptyState onAdd={() => router.push("/watchlist/new")} />
@@ -92,9 +93,9 @@ function WatchlistRow({ item }: { item: WatchlistItem }) {
       <div className="space-y-1">
         <div className="font-medium">{item.title}</div>
         <div className="text-xs text-zinc-500">
-          {item.content_type === "movie" ? "Movie" : "TV"} ·{" "}
+          {item.contentType === "movie" ? "Movie" : "TV"} {" - "}
           {item.status === "watched" ? "Watched" : "Want to watch"}
-          {item.rating && ` · Rating: ${item.rating}/5`}
+          {item.rating && ` - Rating: ${item.rating}/5`}
         </div>
         {item.notes && (
           <div className="text-xs text-zinc-400 line-clamp-1">
@@ -122,3 +123,5 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
     </div>
   );
 }
+
+

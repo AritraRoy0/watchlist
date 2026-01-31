@@ -1,16 +1,15 @@
-export type WatchlistType = "MOVIE" | "TV";
+export type WatchlistType = "movie" | "tv";
 
-export type WatchlistStatus = "WANT_TO_WATCH" | "WATCHED";
+export type WatchlistStatus = "want_to_watch" | "watched";
 
 export interface WatchlistItem {
-  id: string;
-  userId: string;
+  id: number;
 
   title: string;
-  type: WatchlistType;
+  contentType: WatchlistType;
   status: WatchlistStatus;
 
-  rating?: number; // 1–5
+  rating?: number; // 1-5
   notes?: string;
   imageUrl?: string;
 
