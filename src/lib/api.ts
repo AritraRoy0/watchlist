@@ -1,18 +1,12 @@
 import type { WatchlistItem } from "../types/watchlist";
 import { auth } from "./auth";
 
-function getBaseUrl() {
-  const url = process.env.NEXT_PUBLIC_API_BASE_URL;
-  if (!url) {
-    return "/api";
-  }
-  if (!/^https?:\/\//i.test(url) && !url.startsWith("/")) {
-    throw new Error(
-      "NEXT_PUBLIC_API_BASE_URL must include http(s):// or start with / (e.g. /api or http://ec2-54-242-212-23.compute-1.amazonaws.com:4000)"
-    );
-  }
-  return url.replace(/\/+$/, "");
-}
+/**
+ * Always use the Vercel proxy.
+ * Browser talks to HTTPS (/api),
+ * Vercel talks to EC2 over HTTP.
+ */
+const API_BASE = "/api";
 
 function headers() {
   const token = auth.getToken();
@@ -22,37 +16,89 @@ function headers() {
   };
 }
 
-export async function login(email: string, password: string) {
-  const res = await fetch(`${getBaseUrl()}/auth/login`, {
+/* =========================
+   AUTH
+========================= */
+
+export async function register(payload: {
+  email: string;
+  password: string;
+  fullName?: string;
+}) {
+  const res = await fetch(`${API_BASE}/auth/register`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
+    headers: headers(),
+    body: JSON.stringify(payload),
   });
 
-  if (!res.ok) throw new Error("Login failed");
+  if (!res.ok) {
+    throw new Error(await res.text());
+  }
+
   return res.json();
 }
 
-export async function register(
-  email: string,
-  password: string,
-  fullName?: string
-) {
-  const res = await fetch(`${getBaseUrl()}/auth/register`, {
+export async function login(payload: {
+  email: string;
+  password: string;
+}) {
+  const res = await fetch(`${API_BASE}/auth/login`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password, fullName }),
+    headers: headers(),
+    body: JSON.stringify(payload),
   });
 
-  if (!res.ok) throw new Error("Register failed");
+  if (!res.ok) {
+    throw new Error(await res.text());
+  }
+
   return res.json();
 }
 
-export async function listWatchlist(): Promise<WatchlistItem[]> {
-  const res = await fetch(`${getBaseUrl()}/watchlist`, {
+/* =========================
+   WATCHLIST
+========================= */
+
+export async function getWatchlist(): Promise<WatchlistItem[]> {
+  const res = await fetch(`${API_BASE}/watchlist`, {
     headers: headers(),
   });
 
-  if (!res.ok) throw new Error("Failed to load watchlist");
+  if (!res.ok) {
+    throw new Error(await res.text());
+  }
+
   return res.json();
+}
+
+export async function addWatchlistItem(item: {
+  title: string;
+  contentType: "movie" | "tv";
+  status?: "want_to_watch" | "watched";
+  rating?: number | null;
+  notes?: string | null;
+  imageUrl?: string | null;
+}) {
+  const res = await fetch(`${API_BASE}/watchlist`, {
+    method: "POST",
+    headers: headers(),
+    body: JSON.stringify(item),
+  });
+
+  if (!res.ok) {
+    throw new Error(await res.text());
+  }
+
+  return res.json();
+}
+
+export async function deleteWatchlistItem(id: number) {
+  const res = await fetch(`${API_BASE}/watchlist/${id}`, {
+    method: "DELETE",
+    headers: headers(),
+  });
+
+  if (!res.ok) {
+    throw new Error(await res.text());
+  }
 }
