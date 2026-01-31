@@ -1,50 +1,34 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { login, register } from "@/lib/api";
 import { auth } from "@/lib/auth";
-import {
-  Mail,
-  Lock,
-  User,
-  Eye,
-  EyeOff,
-  Loader2,
-} from "lucide-react";
+import { Mail, Lock, User, Eye } from "lucide-react";
 
-type Mode = "login" | "register";
+type Mode = "signup" | "login";
 
-function isEmail(value: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
-}
-
-export default function HomePage() {
+export default function AuthPage() {
   const router = useRouter();
-
-  const [mode, setMode] = useState<Mode>("register");
+  const [mode, setMode] = useState<Mode>("signup");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function onSubmit(e: React.FormEvent) {
+  // Redirect if already logged in
+  useEffect(() => {
+    if (auth.getToken()) {
+      router.push("/home");
+    }
+  }, [router]);
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-
-    if (!isEmail(email)) {
-      setError("Please enter a valid email address.");
-      return;
-    }
-
-    if (!password) {
-      setError("Password is required.");
-      return;
-    }
-
     setLoading(true);
+
     try {
       const result =
         mode === "login"
@@ -52,87 +36,110 @@ export default function HomePage() {
           : await register({ email, password, fullName });
 
       auth.setToken(result.token);
-      router.push("/watchlist");
+      router.push("/home");
     } catch (err: any) {
-      setError(err.message || "Something went wrong.");
+      setError(err.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-zinc-950 text-white">
-      <form
-        onSubmit={onSubmit}
-        className="w-full max-w-sm space-y-4 rounded-xl bg-zinc-900 p-6 shadow"
-      >
-        <h1 className="text-2xl font-semibold text-center">
-          {mode === "login" ? "Log in" : "Create an account"}
-        </h1>
+    <main className="min-h-screen flex items-center justify-center bg-white">
+      <div className="w-full max-w-md rounded-2xl border border-zinc-200 shadow-sm p-8">
+        {/* Header */}
+        <h1 className="text-3xl font-semibold text-center">Watchlist</h1>
+        <p className="mt-2 text-center text-sm text-zinc-500">
+          {mode === "signup"
+            ? "Create an account to track what to watch"
+            : "Log in to your watchlist"}
+        </p>
 
-        {mode === "register" && (
+        {/* Segmented Toggle */}
+        <div className="relative mt-6 flex rounded-lg border border-zinc-200 p-1">
+          <div
+            className={`absolute inset-y-1 left-1 w-1/2 rounded-md bg-black transition-transform duration-300 ${
+              mode === "login" ? "translate-x-full" : ""
+            }`}
+          />
+          <button
+            type="button"
+            onClick={() => setMode("signup")}
+            className={`relative z-10 w-1/2 py-2 text-sm font-medium ${
+              mode === "signup" ? "text-white" : "text-zinc-500"
+            }`}
+          >
+            Sign up
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode("login")}
+            className={`relative z-10 w-1/2 py-2 text-sm font-medium ${
+              mode === "login" ? "text-white" : "text-zinc-500"
+            }`}
+          >
+            Log in
+          </button>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          {mode === "signup" && (
+            <div className="relative">
+              <User className="absolute left-3 top-3 h-5 w-5 text-zinc-400" />
+              <input
+                className="w-full rounded-lg border border-zinc-200 px-10 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                placeholder="Full name (optional)"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+              />
+            </div>
+          )}
+
           <div className="relative">
-            <User className="absolute left-3 top-3 h-5 w-5 text-zinc-400" />
+            <Mail className="absolute left-3 top-3 h-5 w-5 text-zinc-400" />
             <input
-              className="w-full rounded bg-zinc-800 pl-10 pr-3 py-2"
-              placeholder="Full name"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
+              type="email"
+              className="w-full rounded-lg border border-zinc-200 px-10 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
           </div>
-        )}
 
-        <div className="relative">
-          <Mail className="absolute left-3 top-3 h-5 w-5 text-zinc-400" />
-          <input
-            className="w-full rounded bg-zinc-800 pl-10 pr-3 py-2"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </div>
+          <div className="relative">
+            <Lock className="absolute left-3 top-3 h-5 w-5 text-zinc-400" />
+            <input
+              type="password"
+              className="w-full rounded-lg border border-zinc-200 px-10 pr-10 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+              placeholder="Password (min 6 characters)"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <Eye className="absolute right-3 top-3 h-5 w-5 text-zinc-400" />
+          </div>
 
-        <div className="relative">
-          <Lock className="absolute left-3 top-3 h-5 w-5 text-zinc-400" />
-          <input
-            type={showPassword ? "text" : "password"}
-            className="w-full rounded bg-zinc-800 pl-10 pr-10 py-2"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          {error && (
+            <p className="text-sm text-red-600 text-center">{error}</p>
+          )}
+
           <button
-            type="button"
-            onClick={() => setShowPassword((v) => !v)}
-            className="absolute right-3 top-3 text-zinc-400"
+            type="submit"
+            disabled={loading}
+            className="w-full rounded-lg bg-zinc-400 py-2 text-sm font-medium text-white hover:bg-zinc-500 disabled:opacity-60"
           >
-            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            {loading
+              ? "Please wait..."
+              : mode === "signup"
+              ? "Create account"
+              : "Log in"}
           </button>
-        </div>
+        </form>
 
-        {error && <p className="text-sm text-red-400">{error}</p>}
-
-        <button
-          disabled={loading}
-          className="w-full flex items-center justify-center gap-2 rounded bg-indigo-600 py-2 font-medium hover:bg-indigo-500 disabled:opacity-60"
-        >
-          {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-          {mode === "login" ? "Log in" : "Register"}
-        </button>
-
-        <p className="text-center text-sm text-zinc-400">
-          {mode === "login" ? "No account?" : "Already have an account?"}{" "}
-          <button
-            type="button"
-            onClick={() =>
-              setMode(mode === "login" ? "register" : "login")
-            }
-            className="text-indigo-400 hover:underline"
-          >
-            {mode === "login" ? "Register" : "Log in"}
-          </button>
+        <p className="mt-4 text-center text-xs text-zinc-400">
+          Session stored locally for demo purposes
         </p>
-      </form>
+      </div>
     </main>
   );
 }
