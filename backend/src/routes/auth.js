@@ -21,16 +21,13 @@ router.post("/register", async (req, res) => {
 
   try {
     const passwordHash = await bcrypt.hash(password, 10);
-    console.log("1")
+    console.log(1)
     const [result] = await pool.execute(
       "INSERT INTO users (email, full_name, password_hash) VALUES (?, ?, ?)",
       [email.toLowerCase(), fullName || null, passwordHash]
     );
-    console.log("2")
-    const userId = result.insertId;
-    console.log("3")
-    const token = issueToken(userId);
-    console.log("4")
+    console.log(2)
+    const token = issueToken(result.insertId);
     return res.json({ token });
   } catch (err) {
     if (err?.code === "ER_DUP_ENTRY") {
