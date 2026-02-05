@@ -145,15 +145,23 @@ export default function AuthPage() {
 
           {error && (
             <div
-              className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+              className="relative overflow-hidden rounded-xl border border-red-200 bg-white p-4 text-sm text-red-700"
               role="alert"
               aria-live="polite"
             >
-              <div className="flex items-start gap-2">
-                <AlertCircle className="mt-0.5 h-4 w-4" />
-                <div>
-                  <p className="font-medium">{errorTitle}</p>
+              <div className="absolute inset-0 bg-gradient-to-r from-red-50 via-transparent to-transparent" />
+              <div className="relative flex items-start gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-red-100 text-red-600">
+                  <AlertCircle className="h-5 w-5" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-red-700">
+                    {errorTitle}
+                  </p>
                   <p className="text-xs text-red-600 mt-1">{error}</p>
+                  <p className="text-[11px] text-red-400 mt-2">
+                    Double-check your credentials and try again.
+                  </p>
                 </div>
               </div>
             </div>
