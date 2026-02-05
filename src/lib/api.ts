@@ -64,3 +64,47 @@ export async function getWatchlist() {
 
   return res.json();
 }
+
+export type WatchlistItem = {
+  id: number;
+  title: string;
+  contentType: "movie" | "tv";
+  status: "want_to_watch" | "watched";
+  rating: number | null;
+  notes: string | null;
+  imageUrl: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export async function addWatchlistItem(payload: {
+  title: string;
+  contentType: "movie" | "tv";
+  status?: "want_to_watch" | "watched";
+  rating?: number | null;
+  notes?: string | null;
+  imageUrl?: string | null;
+}) {
+  const res = await fetch(`${API_BASE}/watchlist`, {
+    method: "POST",
+    headers: headers(),
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    throw new Error(await res.text());
+  }
+
+  return res.json() as Promise<WatchlistItem>;
+}
+
+export async function deleteWatchlistItem(id: number) {
+  const res = await fetch(`${API_BASE}/watchlist/${id}`, {
+    method: "DELETE",
+    headers: headers(),
+  });
+
+  if (!res.ok) {
+    throw new Error(await res.text());
+  }
+}
