@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { login, register } from "@/lib/api";
 import { auth } from "@/lib/auth";
-import { Mail, Lock, User, Eye } from "lucide-react";
+import { Mail, Lock, User, Eye, AlertCircle } from "lucide-react";
 
 type Mode = "signup" | "login";
 
@@ -44,6 +44,15 @@ export default function AuthPage() {
     }
   }
 
+  const errorTitle =
+    mode === "login" ? "Login failed" : "Sign up failed";
+  const inputClass = (hasError: boolean) =>
+    `w-full rounded-lg border px-10 py-2 text-sm focus:outline-none focus:ring-1 ${
+      hasError
+        ? "border-red-300 focus:ring-red-400"
+        : "border-zinc-200 focus:ring-black"
+    }`;
+
   return (
     <main className="min-h-screen flex items-center justify-center bg-white">
       <div className="w-full max-w-md rounded-2xl border border-zinc-200 shadow-sm p-8">
@@ -64,7 +73,10 @@ export default function AuthPage() {
           />
           <button
             type="button"
-            onClick={() => setMode("signup")}
+            onClick={() => {
+              setMode("signup");
+              setError(null);
+            }}
             className={`relative z-10 w-1/2 py-2 text-sm font-medium ${
               mode === "signup" ? "text-white" : "text-zinc-500"
             }`}
@@ -73,7 +85,10 @@ export default function AuthPage() {
           </button>
           <button
             type="button"
-            onClick={() => setMode("login")}
+            onClick={() => {
+              setMode("login");
+              setError(null);
+            }}
             className={`relative z-10 w-1/2 py-2 text-sm font-medium ${
               mode === "login" ? "text-white" : "text-zinc-500"
             }`}
@@ -88,10 +103,13 @@ export default function AuthPage() {
             <div className="relative">
               <User className="absolute left-3 top-3 h-5 w-5 text-zinc-400" />
               <input
-                className="w-full rounded-lg border border-zinc-200 px-10 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                className={inputClass(Boolean(error))}
                 placeholder="Full name (optional)"
                 value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
+                onChange={(e) => {
+                  if (error) setError(null);
+                  setFullName(e.target.value);
+                }}
               />
             </div>
           )}
@@ -100,10 +118,13 @@ export default function AuthPage() {
             <Mail className="absolute left-3 top-3 h-5 w-5 text-zinc-400" />
             <input
               type="email"
-              className="w-full rounded-lg border border-zinc-200 px-10 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+              className={inputClass(Boolean(error))}
               placeholder="Email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                if (error) setError(null);
+                setEmail(e.target.value);
+              }}
             />
           </div>
 
@@ -111,16 +132,31 @@ export default function AuthPage() {
             <Lock className="absolute left-3 top-3 h-5 w-5 text-zinc-400" />
             <input
               type="password"
-              className="w-full rounded-lg border border-zinc-200 px-10 pr-10 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+              className={`${inputClass(Boolean(error))} pr-10`}
               placeholder="Password (min 6 characters)"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                if (error) setError(null);
+                setPassword(e.target.value);
+              }}
             />
             <Eye className="absolute right-3 top-3 h-5 w-5 text-zinc-400" />
           </div>
 
           {error && (
-            <p className="text-sm text-red-600 text-center">{error}</p>
+            <div
+              className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+              role="alert"
+              aria-live="polite"
+            >
+              <div className="flex items-start gap-2">
+                <AlertCircle className="mt-0.5 h-4 w-4" />
+                <div>
+                  <p className="font-medium">{errorTitle}</p>
+                  <p className="text-xs text-red-600 mt-1">{error}</p>
+                </div>
+              </div>
+            </div>
           )}
 
           <button
