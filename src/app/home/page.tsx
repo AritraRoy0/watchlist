@@ -7,9 +7,10 @@ import {
   addWatchlistItem,
   deleteWatchlistItem,
   getWatchlist,
+  updateWatchlistItem,
   WatchlistItem,
 } from "@/lib/api";
-import { Plus, LogOut, Film, Tv, Trash2 } from "lucide-react";
+import { Plus, LogOut, Film, Tv, Trash2, Pencil, Check, X } from "lucide-react";
 
 const CONTENT_OPTIONS: Array<WatchlistItem["contentType"]> = [
   "movie",
@@ -106,6 +107,12 @@ export default function HomePage() {
     } finally {
       setDeletingId(null);
     }
+  }
+
+  function handleUpdatedItem(updated: WatchlistItem) {
+    setItems((prev) =>
+      prev.map((item) => (item.id === updated.id ? updated : item))
+    );
   }
 
   return (
@@ -263,6 +270,7 @@ export default function HomePage() {
                 item={item}
                 onDelete={() => handleDeleteItem(item.id)}
                 deleting={deletingId === item.id}
+                onUpdated={handleUpdatedItem}
               />
             ))}
           </section>
@@ -280,11 +288,75 @@ function WatchlistCard({
   item,
   onDelete,
   deleting,
+  onUpdated,
 }: {
   item: WatchlistItem;
   onDelete: () => void;
   deleting: boolean;
+  onUpdated: (item: WatchlistItem) => void;
 }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [draft, setDraft] = useState({
+    title: item.title,
+    contentType: item.contentType,
+    status: item.status,
+    rating: item.rating?.toString() ?? "",
+    notes: item.notes ?? "",
+    imageUrl: item.imageUrl ?? "",
+  });
+
+  useEffect(() => {
+    if (!isEditing) {
+      setDraft({
+        title: item.title,
+        contentType: item.contentType,
+        status: item.status,
+        rating: item.rating?.toString() ?? "",
+        notes: item.notes ?? "",
+        imageUrl: item.imageUrl ?? "",
+      });
+    }
+  }, [item, isEditing]);
+
+  async function handleSave() {
+    setError(null);
+    const trimmedTitle = draft.title.trim();
+    if (!trimmedTitle) {
+      setError("Title is required");
+      return;
+    }
+
+    const ratingValue =
+      draft.rating.trim() === "" ? null : Number(draft.rating);
+    if (
+      ratingValue !== null &&
+      (!Number.isFinite(ratingValue) || ratingValue < 1 || ratingValue > 5)
+    ) {
+      setError("Rating must be between 1 and 5");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const updated = await updateWatchlistItem(item.id, {
+        title: trimmedTitle,
+        contentType: draft.contentType,
+        status: draft.status,
+        rating: ratingValue,
+        notes: draft.notes.trim() ? draft.notes.trim() : null,
+        imageUrl: draft.imageUrl.trim() ? draft.imageUrl.trim() : null,
+      });
+      onUpdated(updated);
+      setIsEditing(false);
+    } catch (err: any) {
+      setError(err.message || "Failed to update item");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   return (
     <div className="group relative rounded-2xl bg-white p-5 shadow-sm ring-1 ring-zinc-200 hover:shadow-md transition">
       <div className="flex items-start gap-4">
@@ -323,15 +395,149 @@ function WatchlistCard({
       </div>
 
       <div className="absolute bottom-4 right-4 flex items-center gap-2 text-xs text-zinc-400 opacity-0 group-hover:opacity-100 transition">
+        {!isEditing && (
+          <button
+            onClick={() => setIsEditing(true)}
+            className="inline-flex items-center gap-1 rounded-full border border-zinc-200 px-2 py-1 text-xs text-zinc-500 hover:text-zinc-900 hover:border-zinc-300 transition"
+          >
+            <Pencil size={12} />
+            Edit
+          </button>
+        )}
         <button
           onClick={onDelete}
-          disabled={deleting}
+          disabled={deleting || saving}
           className="inline-flex items-center gap-1 rounded-full border border-zinc-200 px-2 py-1 text-xs text-zinc-500 hover:text-zinc-900 hover:border-zinc-300 transition disabled:opacity-60"
         >
           <Trash2 size={12} />
           {deleting ? "Deleting..." : "Delete"}
         </button>
       </div>
+
+      {isEditing && (
+        <div className="mt-4 border-t border-zinc-100 pt-4 space-y-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div>
+              <label className="text-xs font-medium text-zinc-500">
+                Title
+              </label>
+              <input
+                className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                value={draft.title}
+                onChange={(e) =>
+                  setDraft((prev) => ({ ...prev, title: e.target.value }))
+                }
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-zinc-500">
+                Type
+              </label>
+              <select
+                className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                value={draft.contentType}
+                onChange={(e) =>
+                  setDraft((prev) => ({
+                    ...prev,
+                    contentType: e.target.value as WatchlistItem["contentType"],
+                  }))
+                }
+              >
+                {CONTENT_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {option === "movie" ? "Movie" : "TV Show"}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <div>
+              <label className="text-xs font-medium text-zinc-500">
+                Status
+              </label>
+              <select
+                className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                value={draft.status}
+                onChange={(e) =>
+                  setDraft((prev) => ({
+                    ...prev,
+                    status: e.target.value as WatchlistItem["status"],
+                  }))
+                }
+              >
+                <option value="want_to_watch">Want to watch</option>
+                <option value="watched">Watched</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-medium text-zinc-500">
+                Rating (1-5)
+              </label>
+              <input
+                type="number"
+                min={1}
+                max={5}
+                className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                value={draft.rating}
+                onChange={(e) =>
+                  setDraft((prev) => ({ ...prev, rating: e.target.value }))
+                }
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-zinc-500">
+                Image URL
+              </label>
+              <input
+                className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                value={draft.imageUrl}
+                onChange={(e) =>
+                  setDraft((prev) => ({ ...prev, imageUrl: e.target.value }))
+                }
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-zinc-500">
+              Notes
+            </label>
+            <textarea
+              className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+              rows={2}
+              value={draft.notes}
+              onChange={(e) =>
+                setDraft((prev) => ({ ...prev, notes: e.target.value }))
+              }
+            />
+          </div>
+
+          {error && <p className="text-xs text-red-600">{error}</p>}
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="inline-flex items-center gap-2 rounded-full bg-black px-4 py-2 text-xs text-white hover:bg-zinc-800 transition disabled:opacity-60"
+            >
+              <Check size={14} />
+              {saving ? "Saving..." : "Save"}
+            </button>
+            <button
+              onClick={() => {
+                setIsEditing(false);
+                setError(null);
+              }}
+              className="inline-flex items-center gap-2 rounded-full border border-zinc-200 px-4 py-2 text-xs text-zinc-500 hover:text-zinc-900 hover:border-zinc-300 transition"
+            >
+              <X size={14} />
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

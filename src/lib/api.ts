@@ -77,6 +77,15 @@ export type WatchlistItem = {
   updatedAt?: string;
 };
 
+export type WatchlistItemPayload = {
+  title?: string;
+  contentType?: "movie" | "tv";
+  status?: "want_to_watch" | "watched";
+  rating?: number | null;
+  notes?: string | null;
+  imageUrl?: string | null;
+};
+
 export async function addWatchlistItem(payload: {
   title: string;
   contentType: "movie" | "tv";
@@ -87,6 +96,23 @@ export async function addWatchlistItem(payload: {
 }) {
   const res = await fetch(`${API_BASE}/watchlist`, {
     method: "POST",
+    headers: headers(),
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    throw new Error(await res.text());
+  }
+
+  return res.json() as Promise<WatchlistItem>;
+}
+
+export async function updateWatchlistItem(
+  id: number,
+  payload: WatchlistItemPayload
+) {
+  const res = await fetch(`${API_BASE}/watchlist/${id}`, {
+    method: "PUT",
     headers: headers(),
     body: JSON.stringify(payload),
   });
