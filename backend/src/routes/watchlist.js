@@ -7,7 +7,7 @@ const router = Router();
 /**
  * GET all platforms
  */
-router.get("/platform", requireAuth, async (_req, res) => {
+router.get("/platforms", requireAuth, async (_req, res) => {
   try {
     const [rows] = await pool.execute(
       `
@@ -19,6 +19,10 @@ router.get("/platform", requireAuth, async (_req, res) => {
 
     return res.json(rows);
   } catch (err) {
+    if (err?.code === "ER_NO_SUCH_TABLE") {
+      console.warn("Platforms table missing, returning empty list.");
+      return res.json([]);
+    }
     console.error("Load platforms failed:", err);
     return res.status(500).json({ error: "Failed to load platforms" });
   }
