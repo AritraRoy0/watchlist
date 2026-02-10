@@ -36,17 +36,17 @@ router.get("/", requireAuth, async (req, res) => {
     const [rows] = await pool.execute(
       `
       SELECT
-        id,
-        platform_id AS platformId,
+        watchlist_items.id,
+        watchlist_items.platform_id AS platformId,
         p.name AS platformName,
-        title,
-        content_type AS contentType,
-        status,
-        rating,
-        notes,
-        image_url AS imageUrl,
-        created_at AS createdAt,
-        updated_at AS updatedAt
+        watchlist_items.title,
+        watchlist_items.content_type AS contentType,
+        watchlist_items.status,
+        watchlist_items.rating,
+        watchlist_items.notes,
+        watchlist_items.image_url AS imageUrl,
+        watchlist_items.created_at AS createdAt,
+        watchlist_items.updated_at AS updatedAt
       FROM watchlist_items
       JOIN platforms p ON p.id = watchlist_items.platform_id
       WHERE user_id = ?
@@ -220,20 +220,20 @@ router.put("/:id", requireAuth, async (req, res) => {
     const [rows] = await pool.execute(
       `
       SELECT
-        id,
-        platform_id AS platformId,
+        watchlist_items.id,
+        watchlist_items.platform_id AS platformId,
         p.name AS platformName,
-        title,
-        content_type AS contentType,
-        status,
-        rating,
-        notes,
-        image_url AS imageUrl,
-        created_at AS createdAt,
-        updated_at AS updatedAt
+        watchlist_items.title,
+        watchlist_items.content_type AS contentType,
+        watchlist_items.status,
+        watchlist_items.rating,
+        watchlist_items.notes,
+        watchlist_items.image_url AS imageUrl,
+        watchlist_items.created_at AS createdAt,
+        watchlist_items.updated_at AS updatedAt
       FROM watchlist_items
       JOIN platforms p ON p.id = watchlist_items.platform_id
-      WHERE id = ? AND user_id = ?
+      WHERE watchlist_items.id = ? AND watchlist_items.user_id = ?
       `,
       [id, req.user.id]
     );
