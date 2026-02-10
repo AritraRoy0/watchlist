@@ -181,10 +181,11 @@ export default function HomePage() {
             </button>
             <button
               onClick={logout}
-              className="rounded-full p-2 text-zinc-500 hover:text-black hover:bg-zinc-200 transition"
+              className="inline-flex items-center gap-2 rounded-full px-3 py-2 text-zinc-500 hover:text-black hover:bg-zinc-200 transition"
               aria-label="Log out"
             >
               <LogOut size={18} />
+              <span className="text-sm">Logout</span>
             </button>
           </div>
         </header>
