@@ -36,21 +36,21 @@ router.get("/", requireAuth, async (req, res) => {
     const [rows] = await pool.execute(
       `
       SELECT
-        watchlist_items.id,
-        watchlist_items.platform_id AS platformId,
+        wi.id,
+        wi.platform_id AS platformId,
         p.name AS platformName,
-        watchlist_items.title,
-        watchlist_items.content_type AS contentType,
-        watchlist_items.status,
-        watchlist_items.rating,
-        watchlist_items.notes,
-        watchlist_items.image_url AS imageUrl,
-        watchlist_items.created_at AS createdAt,
-        watchlist_items.updated_at AS updatedAt
-      FROM watchlist_items
-      JOIN platforms p ON p.id = watchlist_items.platform_id
-      WHERE user_id = ?
-      ORDER BY created_at DESC
+        wi.title,
+        wi.content_type AS contentType,
+        wi.status,
+        wi.rating,
+        wi.notes,
+        wi.image_url AS imageUrl,
+        wi.created_at AS createdAt,
+        wi.updated_at AS updatedAt
+      FROM watchlist_items wi
+      JOIN platforms p ON p.id = wi.platform_id
+      WHERE wi.user_id = ?
+      ORDER BY wi.created_at DESC
       `,
       [req.user.id]
     );
@@ -220,20 +220,20 @@ router.put("/:id", requireAuth, async (req, res) => {
     const [rows] = await pool.execute(
       `
       SELECT
-        watchlist_items.id,
-        watchlist_items.platform_id AS platformId,
+        wi.id,
+        wi.platform_id AS platformId,
         p.name AS platformName,
-        watchlist_items.title,
-        watchlist_items.content_type AS contentType,
-        watchlist_items.status,
-        watchlist_items.rating,
-        watchlist_items.notes,
-        watchlist_items.image_url AS imageUrl,
-        watchlist_items.created_at AS createdAt,
-        watchlist_items.updated_at AS updatedAt
-      FROM watchlist_items
-      JOIN platforms p ON p.id = watchlist_items.platform_id
-      WHERE watchlist_items.id = ? AND watchlist_items.user_id = ?
+        wi.title,
+        wi.content_type AS contentType,
+        wi.status,
+        wi.rating,
+        wi.notes,
+        wi.image_url AS imageUrl,
+        wi.created_at AS createdAt,
+        wi.updated_at AS updatedAt
+      FROM watchlist_items wi
+      JOIN platforms p ON p.id = wi.platform_id
+      WHERE wi.id = ? AND wi.user_id = ?
       `,
       [id, req.user.id]
     );
