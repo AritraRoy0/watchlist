@@ -48,10 +48,12 @@ router.post("/", requireAuth, async (req, res) => {
     imageUrl,
   } = req.body || {};
 
-  if (!title || !contentType) {
-    return res.status(400).json({
-      error: "Title and contentType are required",
-    });
+  if (!title) {
+    return res.status(400).json({ error: "Title is required" });
+  }
+
+  if (!contentType) {
+    return res.status(400).json({ error: "contentType is required" });
   }
 
   try {

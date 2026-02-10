@@ -264,7 +264,7 @@ export default function HomePage() {
                     placeholder="e.g. The Bear"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    required
+                    aria-invalid={formError === "Title is required" && title.trim() === ""}
                   />
                 </div>
 
@@ -367,7 +367,7 @@ export default function HomePage() {
                   </button>
                   <button
                     type="submit"
-                    disabled={submitting || title.trim() === ""}
+                    disabled={submitting}
                     className="inline-flex items-center gap-2 rounded-full bg-black px-5 py-2 text-sm text-white hover:bg-zinc-800 transition disabled:opacity-60"
                   >
                     <Plus size={16} />
