@@ -34,6 +34,7 @@ export default function HomePage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [title, setTitle] = useState("");
   const [contentType, setContentType] =
@@ -145,6 +146,7 @@ export default function HomePage() {
       setFormError(err.message || "Failed to delete item");
     } finally {
       setDeletingId(null);
+      setConfirmDeleteId(null);
     }
   }
 
@@ -203,7 +205,7 @@ export default function HomePage() {
               <WatchlistCard
                 key={item.id}
                 item={item}
-                onDelete={() => handleDeleteItem(item.id)}
+                onDelete={() => setConfirmDeleteId(item.id)}
                 deleting={deletingId === item.id}
                 onUpdated={handleUpdatedItem}
               />
@@ -211,6 +213,52 @@ export default function HomePage() {
           </section>
         )}
       </div>
+
+      {confirmDeleteId !== null && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center px-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="confirm-delete-title"
+          aria-describedby="confirm-delete-description"
+        >
+          <button
+            className="absolute inset-0 bg-black/40"
+            onClick={() => setConfirmDeleteId(null)}
+            aria-label="Close delete confirmation"
+          />
+          <div className="relative w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-6 shadow-xl">
+            <div>
+              <h2 id="confirm-delete-title" className="text-xl font-semibold">
+                Delete item?
+              </h2>
+              <p
+                id="confirm-delete-description"
+                className="text-sm text-zinc-500 mt-1"
+              >
+                This will remove the item from your watchlist.
+              </p>
+            </div>
+            <div className="mt-5 flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setConfirmDeleteId(null)}
+                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 px-5 py-2 text-sm text-zinc-600 hover:text-zinc-900 hover:border-zinc-300 transition"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDeleteItem(confirmDeleteId)}
+                disabled={deletingId === confirmDeleteId}
+                className="inline-flex items-center gap-2 rounded-full bg-black px-5 py-2 text-sm text-white hover:bg-zinc-800 transition disabled:opacity-60"
+              >
+                {deletingId === confirmDeleteId ? "Deleting..." : "Confirm delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showAddForm && (
         <div
