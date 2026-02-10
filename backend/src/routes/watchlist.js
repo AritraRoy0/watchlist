@@ -7,7 +7,7 @@ const router = Router();
 /**
  * GET all platforms
  */
-router.get("/platforms", requireAuth, async (_req, res) => {
+router.get("/platform", requireAuth, async (_req, res) => {
   try {
     const [rows] = await pool.execute(
       `

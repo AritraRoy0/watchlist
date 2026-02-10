@@ -90,7 +90,7 @@ export type Platform = {
 };
 
 export async function getPlatforms() {
-  const res = await fetch(`${API_BASE}/watchlist/platforms`, {
+  const res = await fetch(`${API_BASE}/watchlist/platform`, {
     headers: headers(),
   });
 

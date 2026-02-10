@@ -327,7 +327,7 @@ export default function HomePage() {
 
             <form onSubmit={handleAddItem} className="mt-5 space-y-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <div className="w-full sm:w-52">
+                <div className="w-full sm:w-56">
                   <label className="text-xs font-medium text-zinc-500">
                     Platform
                   </label>
@@ -359,7 +359,9 @@ export default function HomePage() {
                     aria-invalid={formError === "Title is required" && title.trim() === ""}
                   />
                 </div>
+              </div>
 
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <div className="w-full sm:w-44">
                   <label className="text-xs font-medium text-zinc-500">
                     Type
@@ -459,7 +461,7 @@ export default function HomePage() {
                   </button>
                   <button
                     type="submit"
-                    disabled={submitting}
+                    disabled={submitting || platforms.length === 0}
                     className="inline-flex items-center gap-2 rounded-full bg-black px-5 py-2 text-sm text-white hover:bg-zinc-800 transition disabled:opacity-60"
                   >
                     <Plus size={16} />
@@ -583,7 +585,9 @@ function WatchlistCard({
             </span>
 
             {item.platformName && (
-              <span>{item.platformName}</span>
+              <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-zinc-600">
+                {item.platformName}
+              </span>
             )}
 
             <StatusBadge status={item.status} />
