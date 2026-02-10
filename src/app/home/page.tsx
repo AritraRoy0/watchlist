@@ -68,9 +68,13 @@ export default function HomePage() {
             current === null ? platformList[0].id : current
           );
         }
-      } catch {
-        auth.clearToken();
-        router.push("/");
+      } catch (err: any) {
+        if (err?.status === 401 || err?.status === 403) {
+          auth.clearToken();
+          router.push("/");
+        } else {
+          setFormError(err?.message || "Failed to load watchlist");
+        }
       } finally {
         setLoading(false);
       }

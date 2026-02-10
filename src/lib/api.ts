@@ -28,6 +28,13 @@ async function parseErrorMessage(res: Response) {
   return text;
 }
 
+async function ensureOk(res: Response) {
+  if (res.ok) return;
+  const error = new Error(await parseErrorMessage(res));
+  (error as any).status = res.status;
+  throw error;
+}
+
 /* =====================
    AUTH
 ===================== */
@@ -42,9 +49,7 @@ export async function login(payload: {
     body: JSON.stringify(payload),
   });
 
-  if (!res.ok) {
-    throw new Error(await parseErrorMessage(res));
-  }
+  await ensureOk(res);
 
   return res.json();
 }
@@ -60,9 +65,7 @@ export async function register(payload: {
     body: JSON.stringify(payload),
   });
 
-  if (!res.ok) {
-    throw new Error(await parseErrorMessage(res));
-  }
+  await ensureOk(res);
 
   return res.json();
 }
@@ -76,9 +79,7 @@ export async function getWatchlist() {
     headers: headers(),
   });
 
-  if (!res.ok) {
-    throw new Error(await parseErrorMessage(res));
-  }
+  await ensureOk(res);
 
   return res.json();
 }
@@ -93,9 +94,7 @@ export async function getPlatforms() {
     headers: headers(),
   });
 
-  if (!res.ok) {
-    throw new Error(await parseErrorMessage(res));
-  }
+  await ensureOk(res);
 
   return res.json() as Promise<Platform[]>;
 }
@@ -139,9 +138,7 @@ export async function addWatchlistItem(payload: {
     body: JSON.stringify(payload),
   });
 
-  if (!res.ok) {
-    throw new Error(await parseErrorMessage(res));
-  }
+  await ensureOk(res);
 
   return res.json() as Promise<WatchlistItem>;
 }
@@ -156,9 +153,7 @@ export async function updateWatchlistItem(
     body: JSON.stringify(payload),
   });
 
-  if (!res.ok) {
-    throw new Error(await parseErrorMessage(res));
-  }
+  await ensureOk(res);
 
   return res.json() as Promise<WatchlistItem>;
 }
@@ -169,7 +164,5 @@ export async function deleteWatchlistItem(id: number) {
     headers: headers(),
   });
 
-  if (!res.ok) {
-    throw new Error(await parseErrorMessage(res));
-  }
+  await ensureOk(res);
 }
