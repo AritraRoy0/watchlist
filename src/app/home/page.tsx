@@ -98,6 +98,11 @@ export default function HomePage() {
     setSubmitting(true);
 
     try {
+      const trimmedTitle = title.trim();
+      if (!trimmedTitle) {
+        throw new Error("Title is required");
+      }
+
       const ratingValue = rating.trim() === "" ? null : Number(rating);
       if (
         ratingValue !== null &&
@@ -107,7 +112,7 @@ export default function HomePage() {
       }
 
       const newItem = await addWatchlistItem({
-        title: title.trim(),
+        title: trimmedTitle,
         contentType,
         status,
         rating: ratingValue,
