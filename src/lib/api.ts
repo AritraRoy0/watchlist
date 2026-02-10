@@ -10,6 +10,24 @@ function headers() {
   };
 }
 
+async function parseErrorMessage(res: Response) {
+  const text = await res.text();
+  if (!text) {
+    return "Something went wrong";
+  }
+
+  try {
+    const parsed = JSON.parse(text);
+    if (parsed && typeof parsed.error === "string" && parsed.error.trim()) {
+      return parsed.error;
+    }
+  } catch {
+    // fall through to raw text
+  }
+
+  return text;
+}
+
 /* =====================
    AUTH
 ===================== */
@@ -43,7 +61,7 @@ export async function register(payload: {
   });
 
   if (!res.ok) {
-    throw new Error(await res.text());
+    throw new Error(await parseErrorMessage(res));
   }
 
   return res.json();
@@ -59,7 +77,7 @@ export async function getWatchlist() {
   });
 
   if (!res.ok) {
-    throw new Error(await res.text());
+    throw new Error(await parseErrorMessage(res));
   }
 
   return res.json();
@@ -101,7 +119,7 @@ export async function addWatchlistItem(payload: {
   });
 
   if (!res.ok) {
-    throw new Error(await res.text());
+    throw new Error(await parseErrorMessage(res));
   }
 
   return res.json() as Promise<WatchlistItem>;
@@ -118,7 +136,7 @@ export async function updateWatchlistItem(
   });
 
   if (!res.ok) {
-    throw new Error(await res.text());
+    throw new Error(await parseErrorMessage(res));
   }
 
   return res.json() as Promise<WatchlistItem>;
@@ -131,6 +149,6 @@ export async function deleteWatchlistItem(id: number) {
   });
 
   if (!res.ok) {
-    throw new Error(await res.text());
+    throw new Error(await parseErrorMessage(res));
   }
 }
