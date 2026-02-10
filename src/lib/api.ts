@@ -83,8 +83,27 @@ export async function getWatchlist() {
   return res.json();
 }
 
+export type Platform = {
+  id: number;
+  name: string;
+};
+
+export async function getPlatforms() {
+  const res = await fetch(`${API_BASE}/watchlist/platforms`, {
+    headers: headers(),
+  });
+
+  if (!res.ok) {
+    throw new Error(await parseErrorMessage(res));
+  }
+
+  return res.json() as Promise<Platform[]>;
+}
+
 export type WatchlistItem = {
   id: number;
+  platformId: number;
+  platformName: string | null;
   title: string;
   contentType: "movie" | "tv";
   status: "want_to_watch" | "watched";
@@ -96,6 +115,7 @@ export type WatchlistItem = {
 };
 
 export type WatchlistItemPayload = {
+  platformId?: number;
   title?: string;
   contentType?: "movie" | "tv";
   status?: "want_to_watch" | "watched";
@@ -105,6 +125,7 @@ export type WatchlistItemPayload = {
 };
 
 export async function addWatchlistItem(payload: {
+  platformId: number;
   title: string;
   contentType: "movie" | "tv";
   status?: "want_to_watch" | "watched";

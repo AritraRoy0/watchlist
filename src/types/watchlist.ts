@@ -4,6 +4,8 @@ export type WatchlistStatus = "want_to_watch" | "watched";
 
 export interface WatchlistItem {
   id: number;
+  platformId: number;
+  platformName?: string | null;
 
   title: string;
   contentType: WatchlistType;

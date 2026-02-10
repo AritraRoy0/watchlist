@@ -7,7 +7,9 @@ import {
   addWatchlistItem,
   deleteWatchlistItem,
   getWatchlist,
+  getPlatforms,
   updateWatchlistItem,
+  Platform,
   WatchlistItem,
 } from "@/lib/api";
 import {
@@ -30,6 +32,7 @@ const CONTENT_OPTIONS: Array<WatchlistItem["contentType"]> = [
 export default function HomePage() {
   const router = useRouter();
   const [items, setItems] = useState<WatchlistItem[]>([]);
+  const [platforms, setPlatforms] = useState<Platform[]>([]);
   const [loading, setLoading] = useState(true);
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -37,6 +40,7 @@ export default function HomePage() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [title, setTitle] = useState("");
+  const [platformId, setPlatformId] = useState<number | null>(null);
   const [contentType, setContentType] =
     useState<WatchlistItem["contentType"]>("movie");
   const [status, setStatus] =
@@ -53,8 +57,17 @@ export default function HomePage() {
 
     async function load() {
       try {
-        const data = await getWatchlist();
+        const [data, platformList] = await Promise.all([
+          getWatchlist(),
+          getPlatforms(),
+        ]);
         setItems(data);
+        setPlatforms(platformList);
+        if (platformList.length > 0) {
+          setPlatformId((current) =>
+            current === null ? platformList[0].id : current
+          );
+        }
       } catch {
         auth.clearToken();
         router.push("/");
@@ -104,6 +117,10 @@ export default function HomePage() {
         throw new Error("Title is required");
       }
 
+      if (!platformId) {
+        throw new Error("Platform is required");
+      }
+
       const ratingValue = rating.trim() === "" ? null : Number(rating);
       if (
         ratingValue !== null &&
@@ -113,6 +130,7 @@ export default function HomePage() {
       }
 
       const newItem = await addWatchlistItem({
+        platformId,
         title: trimmedTitle,
         contentType,
         status,
@@ -123,6 +141,7 @@ export default function HomePage() {
 
       setItems((prev) => [newItem, ...prev]);
       setTitle("");
+      setPlatformId(platforms[0]?.id ?? null);
       setContentType("movie");
       setStatus("want_to_watch");
       setRating("");
@@ -205,6 +224,7 @@ export default function HomePage() {
               <WatchlistCard
                 key={item.id}
                 item={item}
+                platforms={platforms}
                 onDelete={() => setConfirmDeleteId(item.id)}
                 deleting={deletingId === item.id}
                 onUpdated={handleUpdatedItem}
@@ -303,6 +323,26 @@ export default function HomePage() {
 
             <form onSubmit={handleAddItem} className="mt-5 space-y-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <div className="w-full sm:w-52">
+                  <label className="text-xs font-medium text-zinc-500">
+                    Platform
+                  </label>
+                  <select
+                    className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                    value={platformId ?? ""}
+                    onChange={(e) => setPlatformId(Number(e.target.value))}
+                  >
+                    {platforms.length === 0 ? (
+                      <option value="">No platforms</option>
+                    ) : (
+                      platforms.map((platform) => (
+                        <option key={platform.id} value={platform.id}>
+                          {platform.name}
+                        </option>
+                      ))
+                    )}
+                  </select>
+                </div>
                 <div className="flex-1">
                   <label className="text-xs font-medium text-zinc-500">
                     Title
@@ -440,16 +480,19 @@ function WatchlistCard({
   onDelete,
   deleting,
   onUpdated,
+  platforms,
 }: {
   item: WatchlistItem;
   onDelete: () => void;
   deleting: boolean;
   onUpdated: (item: WatchlistItem) => void;
+  platforms: Platform[];
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [draft, setDraft] = useState({
+    platformId: item.platformId,
     title: item.title,
     contentType: item.contentType,
     status: item.status,
@@ -461,6 +504,7 @@ function WatchlistCard({
   useEffect(() => {
     if (!isEditing) {
       setDraft({
+        platformId: item.platformId,
         title: item.title,
         contentType: item.contentType,
         status: item.status,
@@ -479,6 +523,11 @@ function WatchlistCard({
       return;
     }
 
+    if (!draft.platformId) {
+      setError("Platform is required");
+      return;
+    }
+
     const ratingValue =
       draft.rating.trim() === "" ? null : Number(draft.rating);
     if (
@@ -492,6 +541,7 @@ function WatchlistCard({
     setSaving(true);
     try {
       const updated = await updateWatchlistItem(item.id, {
+        platformId: draft.platformId,
         title: trimmedTitle,
         contentType: draft.contentType,
         status: draft.status,
@@ -527,6 +577,10 @@ function WatchlistCard({
             <span>
               {item.contentType === "movie" ? "Movie" : "TV Show"}
             </span>
+
+            {item.platformName && (
+              <span>{item.platformName}</span>
+            )}
 
             <StatusBadge status={item.status} />
 
@@ -568,6 +622,31 @@ function WatchlistCard({
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label className="text-xs font-medium text-zinc-500">
+                Platform
+              </label>
+              <select
+                className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                value={draft.platformId}
+                onChange={(e) =>
+                  setDraft((prev) => ({
+                    ...prev,
+                    platformId: Number(e.target.value),
+                  }))
+                }
+              >
+                {platforms.length === 0 ? (
+                  <option value="">No platforms</option>
+                ) : (
+                  platforms.map((platform) => (
+                    <option key={platform.id} value={platform.id}>
+                      {platform.name}
+                    </option>
+                  ))
+                )}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-medium text-zinc-500">
                 Title
               </label>
               <input
@@ -578,7 +657,7 @@ function WatchlistCard({
                 }
               />
             </div>
-            <div>
+            <div className="sm:col-span-2">
               <label className="text-xs font-medium text-zinc-500">
                 Type
               </label>

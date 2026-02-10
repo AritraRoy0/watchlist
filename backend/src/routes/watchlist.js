@@ -5,6 +5,26 @@ import { requireAuth } from "../middleware/auth.js";
 const router = Router();
 
 /**
+ * GET all platforms
+ */
+router.get("/platforms", requireAuth, async (_req, res) => {
+  try {
+    const [rows] = await pool.execute(
+      `
+      SELECT id, name
+      FROM platforms
+      ORDER BY name ASC
+      `
+    );
+
+    return res.json(rows);
+  } catch (err) {
+    console.error("Load platforms failed:", err);
+    return res.status(500).json({ error: "Failed to load platforms" });
+  }
+});
+
+/**
  * GET all watchlist items for user
  */
 router.get("/", requireAuth, async (req, res) => {
@@ -13,6 +33,8 @@ router.get("/", requireAuth, async (req, res) => {
       `
       SELECT
         id,
+        platform_id AS platformId,
+        p.name AS platformName,
         title,
         content_type AS contentType,
         status,
@@ -22,6 +44,7 @@ router.get("/", requireAuth, async (req, res) => {
         created_at AS createdAt,
         updated_at AS updatedAt
       FROM watchlist_items
+      JOIN platforms p ON p.id = watchlist_items.platform_id
       WHERE user_id = ?
       ORDER BY created_at DESC
       `,
@@ -40,6 +63,7 @@ router.get("/", requireAuth, async (req, res) => {
  */
 router.post("/", requireAuth, async (req, res) => {
   const {
+    platformId,
     title,
     contentType,
     status,
@@ -52,6 +76,10 @@ router.post("/", requireAuth, async (req, res) => {
     return res.status(400).json({ error: "Title is required" });
   }
 
+  if (!platformId) {
+    return res.status(400).json({ error: "Platform is required" });
+  }
+
   if (!contentType) {
     return res.status(400).json({ error: "contentType is required" });
   }
@@ -60,11 +88,12 @@ router.post("/", requireAuth, async (req, res) => {
     const [result] = await pool.execute(
       `
       INSERT INTO watchlist_items
-        (user_id, title, content_type, status, rating, notes, image_url)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+        (user_id, platform_id, title, content_type, status, rating, notes, image_url)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       `,
       [
         req.user.id,
+        platformId,
         title,
         contentType,
         status || "want_to_watch",
@@ -74,8 +103,19 @@ router.post("/", requireAuth, async (req, res) => {
       ]
     );
 
+    const [platformRows] = await pool.execute(
+      `
+      SELECT name
+      FROM platforms
+      WHERE id = ?
+      `,
+      [platformId]
+    );
+
     return res.status(201).json({
       id: result.insertId,
+      platformId,
+      platformName: platformRows[0]?.name ?? null,
       title,
       contentType,
       status: status || "want_to_watch",
@@ -99,6 +139,7 @@ router.put("/:id", requireAuth, async (req, res) => {
   }
 
   const {
+    platformId,
     title,
     contentType,
     status,
@@ -116,6 +157,14 @@ router.put("/:id", requireAuth, async (req, res) => {
     }
     updates.push("title = ?");
     values.push(title);
+  }
+
+  if (platformId !== undefined) {
+    if (!platformId) {
+      return res.status(400).json({ error: "Platform is required" });
+    }
+    updates.push("platform_id = ?");
+    values.push(platformId);
   }
 
   if (contentType !== undefined) {
@@ -168,6 +217,8 @@ router.put("/:id", requireAuth, async (req, res) => {
       `
       SELECT
         id,
+        platform_id AS platformId,
+        p.name AS platformName,
         title,
         content_type AS contentType,
         status,
@@ -177,6 +228,7 @@ router.put("/:id", requireAuth, async (req, res) => {
         created_at AS createdAt,
         updated_at AS updatedAt
       FROM watchlist_items
+      JOIN platforms p ON p.id = watchlist_items.platform_id
       WHERE id = ? AND user_id = ?
       `,
       [id, req.user.id]
