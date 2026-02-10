@@ -52,12 +52,12 @@ router.post("/login", async (req, res) => {
 
     const user = rows[0];
     if (!user) {
-      return res.status(401).json({ error: "Invalid Credentials" });
+      return res.status(401).json({ error: "Invalid credentials" });
     }
 
     const ok = await bcrypt.compare(password, user.password_hash);
     if (!ok) {
-      return res.status(401).json({ error: "Invalid Credentials" });
+      return res.status(401).json({ error: "Invalid credentials" });
     }
 
     const token = issueToken(user.id);

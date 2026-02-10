@@ -43,7 +43,7 @@ export async function login(payload: {
   });
 
   if (!res.ok) {
-    throw new Error(await res.text());
+    throw new Error(await parseErrorMessage(res));
   }
 
   return res.json();
