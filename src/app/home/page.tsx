@@ -10,7 +10,17 @@ import {
   updateWatchlistItem,
   WatchlistItem,
 } from "@/lib/api";
-import { Plus, LogOut, Film, Tv, Trash2, Pencil, Check, X } from "lucide-react";
+import {
+  Plus,
+  LogOut,
+  Film,
+  Tv,
+  Trash2,
+  Pencil,
+  Check,
+  X,
+  Star,
+} from "lucide-react";
 
 const CONTENT_OPTIONS: Array<WatchlistItem["contentType"]> = [
   "movie",
@@ -293,17 +303,16 @@ export default function HomePage() {
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <div>
                   <label className="text-xs font-medium text-zinc-500">
-                    Rating (1-5)
+                    Rating
                   </label>
-                  <input
-                    type="number"
-                    min={1}
-                    max={5}
-                    className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
-                    placeholder="Optional"
-                    value={rating}
-                    onChange={(e) => setRating(e.target.value)}
-                  />
+                  <div className="mt-2">
+                    <StarRatingInput
+                      value={rating === "" ? null : Number(rating)}
+                      onChange={(value) =>
+                        setRating(value ? String(value) : "")
+                      }
+                    />
+                  </div>
                 </div>
                 <div className="sm:col-span-2">
                   <label className="text-xs font-medium text-zinc-500">
@@ -468,9 +477,7 @@ function WatchlistCard({
             <StatusBadge status={item.status} />
 
             {item.rating && (
-              <span className="rounded-full bg-zinc-100 px-2 py-0.5">
-                {item.rating}/5
-              </span>
+              <StarRatingDisplay rating={item.rating} />
             )}
           </div>
 
@@ -561,18 +568,19 @@ function WatchlistCard({
             </div>
             <div>
               <label className="text-xs font-medium text-zinc-500">
-                Rating (1-5)
+                Rating
               </label>
-              <input
-                type="number"
-                min={1}
-                max={5}
-                className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
-                value={draft.rating}
-                onChange={(e) =>
-                  setDraft((prev) => ({ ...prev, rating: e.target.value }))
-                }
-              />
+              <div className="mt-2">
+                <StarRatingInput
+                  value={draft.rating === "" ? null : Number(draft.rating)}
+                  onChange={(value) =>
+                    setDraft((prev) => ({
+                      ...prev,
+                      rating: value ? String(value) : "",
+                    }))
+                  }
+                />
+              </div>
             </div>
             <div>
               <label className="text-xs font-medium text-zinc-500">
@@ -645,6 +653,66 @@ function StatusBadge({
     >
       {status === "watched" ? "Watched" : "Want to watch"}
     </span>
+  );
+}
+
+function StarRatingDisplay({ rating }: { rating: number }) {
+  return (
+    <div className="flex items-center gap-0.5">
+      {[1, 2, 3, 4, 5].map((value) => (
+        <Star
+          key={value}
+          size={14}
+          className={value <= rating ? "text-amber-500" : "text-zinc-300"}
+          fill={value <= rating ? "currentColor" : "none"}
+          aria-hidden="true"
+        />
+      ))}
+      <span className="sr-only">{rating} out of 5 stars</span>
+    </div>
+  );
+}
+
+function StarRatingInput({
+  value,
+  onChange,
+}: {
+  value: number | null;
+  onChange: (value: number | null) => void;
+}) {
+  return (
+    <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1">
+        {[1, 2, 3, 4, 5].map((ratingValue) => {
+          const isActive = value !== null && ratingValue <= value;
+          return (
+            <button
+              key={ratingValue}
+              type="button"
+              onClick={() => onChange(ratingValue)}
+              className="rounded-full p-1 text-zinc-300 hover:text-amber-400 focus:outline-none focus:ring-1 focus:ring-black"
+              aria-label={`Set rating to ${ratingValue} star${
+                ratingValue === 1 ? "" : "s"
+              }`}
+            >
+              <Star
+                size={16}
+                className={isActive ? "text-amber-500" : "text-zinc-300"}
+                fill={isActive ? "currentColor" : "none"}
+                aria-hidden="true"
+              />
+            </button>
+          );
+        })}
+      </div>
+      <button
+        type="button"
+        onClick={() => onChange(null)}
+        className="text-xs text-zinc-400 hover:text-zinc-600 transition"
+      >
+        Clear
+      </button>
+    </div>
   );
 }
 
