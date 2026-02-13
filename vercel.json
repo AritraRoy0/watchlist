@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "http://ec2-54-242-212-23.compute-1.amazonaws.com:4000/:path*"
+      "destination": "http://ec2-13-218-127-54.compute-1.amazonaws.com:4000/:path*"
     }
   ]
 }
