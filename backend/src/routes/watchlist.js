@@ -32,6 +32,31 @@ router.get("/platforms", requireAuth, async (_req, res) => {
  * GET all watchlist items for user
  */
 router.get("/", requireAuth, async (req, res) => {
+  const { status, contentType } = req.query;
+  const allowedStatuses = new Set(["want_to_watch", "watched"]);
+  const allowedContentTypes = new Set(["movie", "tv"]);
+  const filters = ["wi.user_id = ?"];
+  const values = [req.user.id];
+
+  if (status !== undefined) {
+    if (typeof status !== "string" || !allowedStatuses.has(status)) {
+      return res.status(400).json({ error: "Invalid status filter" });
+    }
+    filters.push("wi.status = ?");
+    values.push(status);
+  }
+
+  if (contentType !== undefined) {
+    if (
+      typeof contentType !== "string" ||
+      !allowedContentTypes.has(contentType)
+    ) {
+      return res.status(400).json({ error: "Invalid contentType filter" });
+    }
+    filters.push("wi.content_type = ?");
+    values.push(contentType);
+  }
+
   try {
     const [rows] = await pool.execute(
       `
@@ -49,10 +74,10 @@ router.get("/", requireAuth, async (req, res) => {
         wi.updated_at AS updatedAt
       FROM watchlist_items wi
       JOIN platforms p ON p.id = wi.platform_id
-      WHERE wi.user_id = ?
+      WHERE ${filters.join(" AND ")}
       ORDER BY wi.created_at DESC
       `,
-      [req.user.id]
+      values
     );
 
     return res.json(rows);

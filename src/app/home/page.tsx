@@ -39,6 +39,10 @@ export default function HomePage() {
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [statusFilter, setStatusFilter] =
+    useState<"all" | WatchlistItem["status"]>("all");
+  const [typeFilter, setTypeFilter] =
+    useState<"all" | WatchlistItem["contentType"]>("all");
   const [title, setTitle] = useState("");
   const [platformId, setPlatformId] = useState<number | null>(null);
   const [contentType, setContentType] =
@@ -57,11 +61,7 @@ export default function HomePage() {
 
     async function load() {
       try {
-        const [data, platformList] = await Promise.all([
-          getWatchlist(),
-          getPlatforms(),
-        ]);
-        setItems(data);
+        const platformList = await getPlatforms();
         setPlatforms(platformList);
         if (platformList.length > 0) {
           setPlatformId((current) =>
@@ -73,15 +73,74 @@ export default function HomePage() {
           auth.clearToken();
           router.push("/");
         } else {
-          setFormError(err?.message || "Failed to load watchlist");
+          setFormError(err?.message || "Failed to load platforms");
+        }
+      } finally {
+        // Watchlist loading is handled in a dedicated effect so filters can refetch.
+      }
+    }
+
+    load();
+  }, [router]);
+
+  useEffect(() => {
+    if (!auth.getToken()) {
+      router.push("/");
+      return;
+    }
+
+    async function loadWatchlistItems() {
+      setLoading(true);
+      setFormError(null);
+      try {
+        const filters: {
+          status?: WatchlistItem["status"];
+          contentType?: WatchlistItem["contentType"];
+        } = {};
+
+        if (statusFilter !== "all") {
+          filters.status = statusFilter;
+        }
+        if (typeFilter !== "all") {
+          filters.contentType = typeFilter;
+        }
+
+        const data = await getWatchlist(filters);
+        setItems(data);
+      } catch (err: unknown) {
+        const statusCode =
+          typeof err === "object" &&
+          err !== null &&
+          "status" in err &&
+          typeof err.status === "number"
+            ? err.status
+            : null;
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to load watchlist";
+
+        if (statusCode === 401 || statusCode === 403) {
+          auth.clearToken();
+          router.push("/");
+        } else {
+          setFormError(errorMessage);
         }
       } finally {
         setLoading(false);
       }
     }
 
-    load();
-  }, [router]);
+    loadWatchlistItems();
+  }, [router, statusFilter, typeFilter]);
+
+  function itemMatchesFilters(item: WatchlistItem) {
+    if (statusFilter !== "all" && item.status !== statusFilter) {
+      return false;
+    }
+    if (typeFilter !== "all" && item.contentType !== typeFilter) {
+      return false;
+    }
+    return true;
+  }
 
   useEffect(() => {
     if (!showAddForm) {
@@ -143,7 +202,9 @@ export default function HomePage() {
         imageUrl: imageUrl.trim() ? imageUrl.trim() : null,
       });
 
-      setItems((prev) => [newItem, ...prev]);
+      if (itemMatchesFilters(newItem)) {
+        setItems((prev) => [newItem, ...prev]);
+      }
       setTitle("");
       setPlatformId(platforms[0]?.id ?? null);
       setContentType("movie");
@@ -174,10 +235,16 @@ export default function HomePage() {
   }
 
   function handleUpdatedItem(updated: WatchlistItem) {
-    setItems((prev) =>
-      prev.map((item) => (item.id === updated.id ? updated : item))
-    );
+    setItems((prev) => {
+      if (!itemMatchesFilters(updated)) {
+        return prev.filter((item) => item.id !== updated.id);
+      }
+
+      return prev.map((item) => (item.id === updated.id ? updated : item));
+    });
   }
+
+  const hasActiveFilters = statusFilter !== "all" || typeFilter !== "all";
 
   return (
     <main className="min-h-screen bg-zinc-50">
@@ -215,13 +282,52 @@ export default function HomePage() {
           </div>
         </header>
 
+        <section className="rounded-2xl border border-zinc-200 bg-white p-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+            <div className="w-full sm:w-56">
+              <label className="text-xs font-medium text-zinc-500">
+                Status filter
+              </label>
+              <select
+                className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                value={statusFilter}
+                onChange={(e) =>
+                  setStatusFilter(e.target.value as "all" | WatchlistItem["status"])
+                }
+              >
+                <option value="all">All statuses</option>
+                <option value="want_to_watch">Want to watch</option>
+                <option value="watched">Watched</option>
+              </select>
+            </div>
+            <div className="w-full sm:w-56">
+              <label className="text-xs font-medium text-zinc-500">
+                Type filter
+              </label>
+              <select
+                className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                value={typeFilter}
+                onChange={(e) =>
+                  setTypeFilter(
+                    e.target.value as "all" | WatchlistItem["contentType"]
+                  )
+                }
+              >
+                <option value="all">All types</option>
+                <option value="movie">Movies</option>
+                <option value="tv">Shows</option>
+              </select>
+            </div>
+          </div>
+        </section>
+
         {/* Content */}
         {loading ? (
           <div className="py-32 text-center text-sm text-zinc-400">
             Loading your watchlist...
           </div>
         ) : items.length === 0 ? (
-          <EmptyState />
+          <EmptyState hasActiveFilters={hasActiveFilters} />
         ) : (
           <section className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {items.map((item) => (
@@ -857,11 +963,13 @@ function StarRatingInput({
   );
 }
 
-function EmptyState() {
+function EmptyState({ hasActiveFilters }: { hasActiveFilters: boolean }) {
   return (
     <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-300 bg-white py-24 space-y-4 text-center">
       <div className="text-sm text-zinc-500">
-        You haven't added anything yet
+        {hasActiveFilters
+          ? "No items match your current filters"
+          : "You haven't added anything yet"}
       </div>
     </div>
   );

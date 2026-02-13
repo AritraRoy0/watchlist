@@ -74,8 +74,22 @@ export async function register(payload: {
    WATCHLIST
 ===================== */
 
-export async function getWatchlist() {
-  const res = await fetch(`${API_BASE}/watchlist`, {
+type GetWatchlistFilters = {
+  status?: "want_to_watch" | "watched";
+  contentType?: "movie" | "tv";
+};
+
+export async function getWatchlist(filters?: GetWatchlistFilters) {
+  const params = new URLSearchParams();
+  if (filters?.status) {
+    params.set("status", filters.status);
+  }
+  if (filters?.contentType) {
+    params.set("contentType", filters.contentType);
+  }
+  const query = params.toString();
+
+  const res = await fetch(`${API_BASE}/watchlist${query ? `?${query}` : ""}`, {
     headers: headers(),
   });
 
