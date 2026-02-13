@@ -247,17 +247,22 @@ export default function HomePage() {
   const hasActiveFilters = statusFilter !== "all" || typeFilter !== "all";
 
   return (
-    <main className="min-h-screen bg-zinc-50">
-      <div className="mx-auto max-w-5xl px-6 py-10 space-y-10">
+    <main className="min-h-screen bg-gradient-to-br from-[#06142a] via-[#071734] to-[#081938] text-slate-100">
+      <div className="mx-auto max-w-7xl px-6 py-10 space-y-8">
         {/* Top Bar */}
         <header className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-semibold tracking-tight">
-              Your Watchlist
-            </h1>
-            <p className="text-sm text-zinc-500 mt-1">
-              Movies and shows you don't want to forget
-            </p>
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-emerald-500/50 bg-emerald-500/10 text-emerald-400">
+              <Tv size={28} />
+            </div>
+            <div>
+              <h1 className="text-5xl font-semibold tracking-tight text-white">
+                Your Watchlist
+              </h1>
+              <p className="mt-1 text-sm text-slate-300">
+                Movies and shows you don&apos;t want to forget
+              </p>
+            </div>
           </div>
 
           <div className="flex items-center gap-3">
@@ -266,14 +271,14 @@ export default function HomePage() {
                 setFormError(null);
                 setShowAddForm(true);
               }}
-              className="inline-flex items-center gap-2 rounded-full bg-black px-4 py-2 text-sm text-white hover:bg-zinc-800 transition"
+              className="inline-flex items-center gap-2 rounded-full bg-emerald-700 px-6 py-2.5 text-2 font-semibold text-white shadow-[0_6px_0_0_#0b7435] transition hover:bg-emerald-600"
             >
               <Plus size={16} />
               Add item
             </button>
             <button
               onClick={logout}
-              className="inline-flex items-center gap-2 rounded-full px-3 py-2 text-zinc-500 hover:text-black hover:bg-zinc-200 transition"
+              className="inline-flex items-center gap-2 rounded-full px-3 py-2 text-slate-300 hover:text-white hover:bg-slate-700/50 transition"
               aria-label="Log out"
             >
               <LogOut size={18} />
@@ -282,14 +287,12 @@ export default function HomePage() {
           </div>
         </header>
 
-        <section className="rounded-2xl border border-zinc-200 bg-white p-4">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+        <section className="p-0">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:gap-4">
+            <p className="text-2 font-semibold text-slate-100 sm:pb-2">Filter by:</p>
             <div className="w-full sm:w-56">
-              <label className="text-xs font-medium text-zinc-500">
-                Status filter
-              </label>
               <select
-                className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                className="w-full rounded-xl border border-slate-500 bg-slate-700/80 px-4 py-3 text-2 font-semibold text-slate-100 shadow-[0_4px_0_0_rgba(51,65,85,0.8)] focus:outline-none focus:ring-2 focus:ring-emerald-400"
                 value={statusFilter}
                 onChange={(e) =>
                   setStatusFilter(e.target.value as "all" | WatchlistItem["status"])
@@ -301,11 +304,8 @@ export default function HomePage() {
               </select>
             </div>
             <div className="w-full sm:w-56">
-              <label className="text-xs font-medium text-zinc-500">
-                Type filter
-              </label>
               <select
-                className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                className="w-full rounded-xl border border-slate-500 bg-slate-700/80 px-4 py-3 text-2 font-semibold text-slate-100 shadow-[0_4px_0_0_rgba(51,65,85,0.8)] focus:outline-none focus:ring-2 focus:ring-emerald-400"
                 value={typeFilter}
                 onChange={(e) =>
                   setTypeFilter(
@@ -323,13 +323,13 @@ export default function HomePage() {
 
         {/* Content */}
         {loading ? (
-          <div className="py-32 text-center text-sm text-zinc-400">
+          <div className="py-32 text-center text-sm text-slate-300">
             Loading your watchlist...
           </div>
         ) : items.length === 0 ? (
           <EmptyState hasActiveFilters={hasActiveFilters} />
         ) : (
-          <section className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <section className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {items.map((item) => (
               <WatchlistCard
                 key={item.id}
@@ -357,14 +357,14 @@ export default function HomePage() {
             onClick={() => setConfirmDeleteId(null)}
             aria-label="Close delete confirmation"
           />
-          <div className="relative w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-6 shadow-xl">
+          <div className="relative w-full max-w-md rounded-2xl border border-slate-600 bg-slate-800 p-6 shadow-xl">
             <div>
-              <h2 id="confirm-delete-title" className="text-xl font-semibold">
+              <h2 id="confirm-delete-title" className="text-xl font-semibold text-white">
                 Delete item?
               </h2>
               <p
                 id="confirm-delete-description"
-                className="text-sm text-zinc-500 mt-1"
+                className="mt-1 text-sm text-slate-300"
               >
                 This will remove the item from your watchlist.
               </p>
@@ -373,7 +373,7 @@ export default function HomePage() {
               <button
                 type="button"
                 onClick={() => setConfirmDeleteId(null)}
-                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 px-5 py-2 text-sm text-zinc-600 hover:text-zinc-900 hover:border-zinc-300 transition"
+                className="inline-flex items-center gap-2 rounded-full border border-slate-500 px-5 py-2 text-sm text-slate-200 hover:text-white hover:border-slate-300 transition"
               >
                 Cancel
               </button>
@@ -381,7 +381,7 @@ export default function HomePage() {
                 type="button"
                 onClick={() => handleDeleteItem(confirmDeleteId)}
                 disabled={deletingId === confirmDeleteId}
-                className="inline-flex items-center gap-2 rounded-full bg-black px-5 py-2 text-sm text-white hover:bg-zinc-800 transition disabled:opacity-60"
+                className="inline-flex items-center gap-2 rounded-full bg-rose-600 px-5 py-2 text-sm font-semibold text-white hover:bg-rose-500 transition disabled:opacity-60"
               >
                 {deletingId === confirmDeleteId ? "Deleting..." : "Confirm delete"}
               </button>
@@ -406,15 +406,15 @@ export default function HomePage() {
             }}
             aria-label="Close add item form"
           />
-          <div className="relative w-full max-w-2xl rounded-2xl border border-zinc-200 bg-white p-6 shadow-xl">
+          <div className="relative w-full max-w-2xl rounded-2xl border border-slate-600 bg-slate-800 p-6 shadow-xl text-slate-100">
             <div className="flex items-start justify-between">
               <div>
-                <h2 id="add-item-title" className="text-xl font-semibold">
+                <h2 id="add-item-title" className="text-xl font-semibold text-white">
                   Add to your watchlist
                 </h2>
                 <p
                   id="add-item-description"
-                  className="text-sm text-zinc-500 mt-1"
+                  className="mt-1 text-sm text-slate-300"
                 >
                   Keep track of what you want to watch next.
                 </p>
@@ -424,7 +424,7 @@ export default function HomePage() {
                   setShowAddForm(false);
                   setFormError(null);
                 }}
-                className="rounded-full p-2 text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition"
+                className="rounded-full p-2 text-slate-300 hover:text-white hover:bg-slate-700 transition"
                 aria-label="Close form"
               >
                 <X size={16} />
@@ -434,11 +434,11 @@ export default function HomePage() {
             <form onSubmit={handleAddItem} className="mt-5 space-y-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <div className="w-full sm:w-56">
-                  <label className="text-xs font-medium text-zinc-500">
+                  <label className="text-xs font-medium text-slate-300">
                     Platform
                   </label>
                   <select
-                    className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                    className="mt-1 w-full rounded-lg border border-slate-600 bg-[#182941] px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-400"
                     value={platformId ?? ""}
                     onChange={(e) => setPlatformId(Number(e.target.value))}
                   >
@@ -454,11 +454,11 @@ export default function HomePage() {
                   </select>
                 </div>
                 <div className="flex-1">
-                  <label className="text-xs font-medium text-zinc-500">
+                  <label className="text-xs font-medium text-slate-300">
                     Title
                   </label>
                   <input
-                    className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                    className="mt-1 w-full rounded-lg border border-slate-600 bg-[#182941] px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-400"
                     placeholder="e.g. The Bear"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
@@ -469,11 +469,11 @@ export default function HomePage() {
 
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <div className="w-full sm:w-44">
-                  <label className="text-xs font-medium text-zinc-500">
+                  <label className="text-xs font-medium text-slate-300">
                     Type
                   </label>
                   <select
-                    className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                    className="mt-1 w-full rounded-lg border border-slate-600 bg-[#182941] px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-400"
                     value={contentType}
                     onChange={(e) =>
                       setContentType(
@@ -490,11 +490,11 @@ export default function HomePage() {
                 </div>
 
                 <div className="w-full sm:w-48">
-                  <label className="text-xs font-medium text-zinc-500">
+                  <label className="text-xs font-medium text-slate-300">
                     Status
                   </label>
                   <select
-                    className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                    className="mt-1 w-full rounded-lg border border-slate-600 bg-[#182941] px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-400"
                     value={status}
                     onChange={(e) =>
                       setStatus(e.target.value as WatchlistItem["status"])
@@ -508,7 +508,7 @@ export default function HomePage() {
 
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <div>
-                  <label className="text-xs font-medium text-zinc-500">
+                  <label className="text-xs font-medium text-slate-300">
                     Rating
                   </label>
                   <div className="mt-2">
@@ -521,11 +521,11 @@ export default function HomePage() {
                   </div>
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="text-xs font-medium text-zinc-500">
+                  <label className="text-xs font-medium text-slate-300">
                     Image URL
                   </label>
                   <input
-                    className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                    className="mt-1 w-full rounded-lg border border-slate-600 bg-[#182941] px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-400"
                     placeholder="Optional"
                     value={imageUrl}
                     onChange={(e) => setImageUrl(e.target.value)}
@@ -534,11 +534,11 @@ export default function HomePage() {
               </div>
 
               <div>
-                <label className="text-xs font-medium text-zinc-500">
+                <label className="text-xs font-medium text-slate-300">
                   Notes
                 </label>
                 <textarea
-                  className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                  className="mt-1 w-full rounded-lg border border-slate-600 bg-[#182941] px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-400"
                   rows={2}
                   placeholder="Optional"
                   value={notes}
@@ -550,7 +550,7 @@ export default function HomePage() {
                 {formError ? (
                   <p className="text-sm text-red-600">{formError}</p>
                 ) : (
-                  <span className="text-xs text-zinc-400">
+                  <span className="text-xs text-slate-400">
                     Add items directly to your watchlist
                   </span>
                 )}
@@ -561,14 +561,14 @@ export default function HomePage() {
                       setShowAddForm(false);
                       setFormError(null);
                     }}
-                    className="inline-flex items-center gap-2 rounded-full border border-zinc-200 px-5 py-2 text-sm text-zinc-600 hover:text-zinc-900 hover:border-zinc-300 transition"
+                    className="inline-flex items-center gap-2 rounded-full border border-slate-500 px-5 py-2 text-sm text-slate-200 hover:text-white hover:border-slate-300 transition"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={submitting || platforms.length === 0}
-                    className="inline-flex items-center gap-2 rounded-full bg-black px-5 py-2 text-sm text-white hover:bg-zinc-800 transition disabled:opacity-60"
+                    className="inline-flex items-center gap-2 rounded-full bg-emerald-700 px-5 py-2 text-sm font-semibold text-white shadow-[0_5px_0_0_#0b7435] hover:bg-emerald-600 transition disabled:opacity-60"
                   >
                     <Plus size={16} />
                     {submitting ? "Adding..." : "Add item"}
@@ -600,6 +600,18 @@ function WatchlistCard({
   onUpdated: (item: WatchlistItem) => void;
   platforms: Platform[];
 }) {
+  const cardAccentClass =
+    item.status === "watched"
+      ? item.contentType === "movie"
+        ? "border-rose-600/60 shadow-[inset_0_-4px_0_0_rgba(190,24,93,0.45)]"
+        : "border-emerald-500/60 shadow-[inset_0_-4px_0_0_rgba(16,185,129,0.45)]"
+      : item.contentType === "movie"
+      ? "border-violet-500/60 shadow-[inset_0_-4px_0_0_rgba(139,92,246,0.45)]"
+      : "border-blue-500/60 shadow-[inset_0_-4px_0_0_rgba(59,130,246,0.45)]";
+
+  const platformClass =
+    item.contentType === "movie" ? "text-violet-400" : "text-blue-400";
+
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -671,10 +683,12 @@ function WatchlistCard({
   }
 
   return (
-    <div className="group relative rounded-2xl bg-white p-5 shadow-sm ring-1 ring-zinc-200 hover:shadow-md transition">
+    <div
+      className={`group relative rounded-2xl border bg-[#1b2b45] p-5 text-slate-100 transition ${cardAccentClass}`}
+    >
       <div className="flex items-start gap-4">
         {/* Thumbnail placeholder */}
-        <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-zinc-100 text-zinc-400">
+        <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-slate-700 text-slate-300">
           {item.contentType === "movie" ? (
             <Film size={22} />
           ) : (
@@ -683,15 +697,15 @@ function WatchlistCard({
         </div>
 
         <div className="flex-1 space-y-1">
-          <div className="font-medium leading-tight">{item.title}</div>
+          <div className="text-3xl font-semibold leading-tight text-white">{item.title}</div>
 
-          <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
+          <div className="flex flex-wrap items-center gap-2 text-xl text-slate-300">
             <span>
               {item.contentType === "movie" ? "Movie" : "TV Show"}
             </span>
 
             {item.platformName && (
-              <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-zinc-600">
+              <span className={`font-semibold ${platformClass}`}>
                 {item.platformName}
               </span>
             )}
@@ -704,42 +718,40 @@ function WatchlistCard({
           </div>
 
           {item.notes && (
-            <p className="text-xs text-zinc-400 line-clamp-2 pt-1">
+            <p className="line-clamp-2 pt-1 text-sm text-slate-300">
               {item.notes}
             </p>
           )}
         </div>
       </div>
 
-      <div className="absolute bottom-4 right-4 flex items-center gap-2 text-xs text-zinc-400 opacity-0 group-hover:opacity-100 transition">
+      <div className="absolute bottom-4 right-4 flex items-center gap-4 text-xs opacity-100 transition">
         {!isEditing && (
           <button
             onClick={() => setIsEditing(true)}
-            className="inline-flex items-center gap-1 rounded-full border border-zinc-200 px-2 py-1 text-xs text-zinc-500 hover:text-zinc-900 hover:border-zinc-300 transition"
+            className="inline-flex items-center gap-1 rounded-full text-xs text-blue-400 transition hover:text-blue-300"
           >
             <Pencil size={12} />
-            Edit
           </button>
         )}
         <button
           onClick={onDelete}
           disabled={deleting || saving}
-          className="inline-flex items-center gap-1 rounded-full border border-zinc-200 px-2 py-1 text-xs text-zinc-500 hover:text-zinc-900 hover:border-zinc-300 transition disabled:opacity-60"
+          className="inline-flex items-center gap-1 rounded-full text-xs text-rose-500 transition hover:text-rose-400 disabled:opacity-60"
         >
           <Trash2 size={12} />
-          {deleting ? "Deleting..." : "Delete"}
         </button>
       </div>
 
       {isEditing && (
-        <div className="mt-4 border-t border-zinc-100 pt-4 space-y-3">
+        <div className="mt-4 space-y-3 border-t border-slate-700 pt-4">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
-              <label className="text-xs font-medium text-zinc-500">
+              <label className="text-xs font-medium text-slate-300">
                 Platform
               </label>
               <select
-                className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                className="mt-1 w-full rounded-lg border border-slate-600 bg-[#182941] px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-400"
                 value={draft.platformId}
                 onChange={(e) =>
                   setDraft((prev) => ({
@@ -760,11 +772,11 @@ function WatchlistCard({
               </select>
             </div>
             <div>
-              <label className="text-xs font-medium text-zinc-500">
+              <label className="text-xs font-medium text-slate-300">
                 Title
               </label>
               <input
-                className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                className="mt-1 w-full rounded-lg border border-slate-600 bg-[#182941] px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-400"
                 value={draft.title}
                 onChange={(e) =>
                   setDraft((prev) => ({ ...prev, title: e.target.value }))
@@ -772,11 +784,11 @@ function WatchlistCard({
               />
             </div>
             <div className="sm:col-span-2">
-              <label className="text-xs font-medium text-zinc-500">
+              <label className="text-xs font-medium text-slate-300">
                 Type
               </label>
               <select
-                className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                className="mt-1 w-full rounded-lg border border-slate-600 bg-[#182941] px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-400"
                 value={draft.contentType}
                 onChange={(e) =>
                   setDraft((prev) => ({
@@ -796,11 +808,11 @@ function WatchlistCard({
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <div>
-              <label className="text-xs font-medium text-zinc-500">
+              <label className="text-xs font-medium text-slate-300">
                 Status
               </label>
               <select
-                className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                className="mt-1 w-full rounded-lg border border-slate-600 bg-[#182941] px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-400"
                 value={draft.status}
                 onChange={(e) =>
                   setDraft((prev) => ({
@@ -814,7 +826,7 @@ function WatchlistCard({
               </select>
             </div>
             <div>
-              <label className="text-xs font-medium text-zinc-500">
+              <label className="text-xs font-medium text-slate-300">
                 Rating
               </label>
               <div className="mt-2">
@@ -830,11 +842,11 @@ function WatchlistCard({
               </div>
             </div>
             <div>
-              <label className="text-xs font-medium text-zinc-500">
+              <label className="text-xs font-medium text-slate-300">
                 Image URL
               </label>
               <input
-                className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                className="mt-1 w-full rounded-lg border border-slate-600 bg-[#182941] px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-400"
                 value={draft.imageUrl}
                 onChange={(e) =>
                   setDraft((prev) => ({ ...prev, imageUrl: e.target.value }))
@@ -844,11 +856,11 @@ function WatchlistCard({
           </div>
 
           <div>
-            <label className="text-xs font-medium text-zinc-500">
+            <label className="text-xs font-medium text-slate-300">
               Notes
             </label>
             <textarea
-              className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+              className="mt-1 w-full rounded-lg border border-slate-600 bg-[#182941] px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-400"
               rows={2}
               value={draft.notes}
               onChange={(e) =>
@@ -857,13 +869,13 @@ function WatchlistCard({
             />
           </div>
 
-          {error && <p className="text-xs text-red-600">{error}</p>}
+          {error && <p className="text-xs text-rose-400">{error}</p>}
 
           <div className="flex items-center gap-2">
             <button
               onClick={handleSave}
               disabled={saving}
-              className="inline-flex items-center gap-2 rounded-full bg-black px-4 py-2 text-xs text-white hover:bg-zinc-800 transition disabled:opacity-60"
+              className="inline-flex items-center gap-2 rounded-full bg-emerald-700 px-4 py-2 text-xs font-semibold text-white shadow-[0_4px_0_0_#0b7435] hover:bg-emerald-600 transition disabled:opacity-60"
             >
               <Check size={14} />
               {saving ? "Saving..." : "Save"}
@@ -873,7 +885,7 @@ function WatchlistCard({
                 setIsEditing(false);
                 setError(null);
               }}
-              className="inline-flex items-center gap-2 rounded-full border border-zinc-200 px-4 py-2 text-xs text-zinc-500 hover:text-zinc-900 hover:border-zinc-300 transition"
+              className="inline-flex items-center gap-2 rounded-full border border-slate-500 px-4 py-2 text-xs text-slate-200 hover:text-white hover:border-slate-300 transition"
             >
               <X size={14} />
               Cancel
@@ -894,8 +906,8 @@ function StatusBadge({
     <span
       className={`rounded-full px-2 py-0.5 ${
         status === "watched"
-          ? "bg-emerald-100 text-emerald-700"
-          : "bg-amber-100 text-amber-700"
+          ? "bg-emerald-500 text-white"
+          : "bg-amber-500 text-white"
       }`}
     >
       {status === "watched" ? "Watched" : "Want to watch"}
@@ -910,7 +922,7 @@ function StarRatingDisplay({ rating }: { rating: number }) {
         <Star
           key={value}
           size={14}
-          className={value <= rating ? "text-amber-500" : "text-zinc-300"}
+          className={value <= rating ? "text-amber-400" : "text-slate-500"}
           fill={value <= rating ? "currentColor" : "none"}
           aria-hidden="true"
         />
@@ -937,14 +949,14 @@ function StarRatingInput({
               key={ratingValue}
               type="button"
               onClick={() => onChange(ratingValue)}
-              className="rounded-full p-1 text-zinc-300 hover:text-amber-400 focus:outline-none focus:ring-1 focus:ring-black"
+              className="rounded-full p-1 text-slate-500 hover:text-amber-400 focus:outline-none focus:ring-2 focus:ring-emerald-400"
               aria-label={`Set rating to ${ratingValue} star${
                 ratingValue === 1 ? "" : "s"
               }`}
             >
               <Star
                 size={16}
-                className={isActive ? "text-amber-500" : "text-zinc-300"}
+                className={isActive ? "text-amber-400" : "text-slate-500"}
                 fill={isActive ? "currentColor" : "none"}
                 aria-hidden="true"
               />
@@ -955,7 +967,7 @@ function StarRatingInput({
       <button
         type="button"
         onClick={() => onChange(null)}
-        className="text-xs text-zinc-400 hover:text-zinc-600 transition"
+        className="text-xs text-slate-400 hover:text-slate-200 transition"
       >
         Clear
       </button>
@@ -965,8 +977,8 @@ function StarRatingInput({
 
 function EmptyState({ hasActiveFilters }: { hasActiveFilters: boolean }) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-300 bg-white py-24 space-y-4 text-center">
-      <div className="text-sm text-zinc-500">
+    <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-500 bg-[#1b2b45] py-24 text-center">
+      <div className="text-sm text-slate-300">
         {hasActiveFilters
           ? "No items match your current filters"
           : "You haven't added anything yet"}
