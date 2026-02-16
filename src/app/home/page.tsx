@@ -688,7 +688,7 @@ function WatchlistCard({
     >
       <div className="flex items-start gap-4">
         {/* Thumbnail placeholder */}
-        <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-slate-700 text-slate-300">
+        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-700 text-slate-300">
           {item.contentType === "movie" ? (
             <Film size={22} />
           ) : (
@@ -697,9 +697,9 @@ function WatchlistCard({
         </div>
 
         <div className="flex-1 space-y-1">
-          <div className="text-3xl font-semibold leading-tight text-white">{item.title}</div>
+          <div className="font-medium leading-tight text-white">{item.title}</div>
 
-          <div className="flex flex-wrap items-center gap-2 text-xl text-slate-300">
+          <div className="flex flex-wrap items-center gap-2 text-xs text-slate-300">
             <span>
               {item.contentType === "movie" ? "Movie" : "TV Show"}
             </span>
@@ -718,7 +718,7 @@ function WatchlistCard({
           </div>
 
           {item.notes && (
-            <p className="line-clamp-2 pt-1 text-sm text-slate-300">
+            <p className="line-clamp-2 pt-1 text-xs text-slate-300">
               {item.notes}
             </p>
           )}
