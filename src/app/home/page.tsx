@@ -35,6 +35,7 @@ export default function HomePage() {
   const [platforms, setPlatforms] = useState<Platform[]>([]);
   const [loading, setLoading] = useState(true);
   const [formError, setFormError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
@@ -164,6 +165,18 @@ export default function HomePage() {
     };
   }, [showAddForm]);
 
+  useEffect(() => {
+    if (!successMessage) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setSuccessMessage(null);
+    }, 2500);
+
+    return () => window.clearTimeout(timer);
+  }, [successMessage]);
+
   function logout() {
     auth.clearToken();
     router.push("/");
@@ -172,6 +185,7 @@ export default function HomePage() {
   async function handleAddItem(e: React.FormEvent) {
     e.preventDefault();
     setFormError(null);
+    setSuccessMessage(null);
     setSubmitting(true);
 
     try {
@@ -213,6 +227,7 @@ export default function HomePage() {
       setNotes("");
       setImageUrl("");
       setShowAddForm(false);
+      setSuccessMessage("Item successfully saved!");
     } catch (err: any) {
       setFormError(err.message || "Failed to add item");
     } finally {
@@ -222,10 +237,12 @@ export default function HomePage() {
 
   async function handleDeleteItem(id: number) {
     setFormError(null);
+    setSuccessMessage(null);
     setDeletingId(id);
     try {
       await deleteWatchlistItem(id);
       setItems((prev) => prev.filter((item) => item.id !== id));
+      setSuccessMessage("Item deleted");
     } catch (err: any) {
       setFormError(err.message || "Failed to delete item");
     } finally {
@@ -234,7 +251,7 @@ export default function HomePage() {
     }
   }
 
-  function handleUpdatedItem(updated: WatchlistItem) {
+  function handleUpdatedItem(updated: WatchlistItem, statusChanged: boolean) {
     setItems((prev) => {
       if (!itemMatchesFilters(updated)) {
         return prev.filter((item) => item.id !== updated.id);
@@ -242,6 +259,10 @@ export default function HomePage() {
 
       return prev.map((item) => (item.id === updated.id ? updated : item));
     });
+
+    if (statusChanged) {
+      setSuccessMessage("Status updated successfully!");
+    }
   }
 
   const hasActiveFilters = statusFilter !== "all" || typeFilter !== "all";
@@ -250,6 +271,15 @@ export default function HomePage() {
     <main className="min-h-screen bg-gradient-to-br from-[#06142a] via-[#071734] to-[#081938] text-slate-100">
       <div className="mx-auto max-w-7xl px-6 py-10 space-y-8">
         {/* Top Bar */}
+        {successMessage && (
+          <div
+            role="status"
+            aria-live="polite"
+            className="rounded-xl border border-emerald-500/40 bg-emerald-500/15 px-4 py-3 text-sm font-medium text-emerald-200"
+          >
+            {successMessage}
+          </div>
+        )}
         <header className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-emerald-500/50 bg-emerald-500/10 text-emerald-400">
@@ -597,7 +627,7 @@ function WatchlistCard({
   item: WatchlistItem;
   onDelete: () => void;
   deleting: boolean;
-  onUpdated: (item: WatchlistItem) => void;
+  onUpdated: (item: WatchlistItem, statusChanged: boolean) => void;
   platforms: Platform[];
 }) {
   const cardAccentClass =
@@ -664,6 +694,7 @@ function WatchlistCard({
 
     setSaving(true);
     try {
+      const statusChanged = draft.status !== item.status;
       const updated = await updateWatchlistItem(item.id, {
         platformId: draft.platformId,
         title: trimmedTitle,
@@ -673,7 +704,7 @@ function WatchlistCard({
         notes: draft.notes.trim() ? draft.notes.trim() : null,
         imageUrl: draft.imageUrl.trim() ? draft.imageUrl.trim() : null,
       });
-      onUpdated(updated);
+      onUpdated(updated, statusChanged);
       setIsEditing(false);
     } catch (err: any) {
       setError(err.message || "Failed to update item");
