@@ -639,8 +639,10 @@ function WatchlistCard({
       ? "border-violet-500/60 shadow-[inset_0_-4px_0_0_rgba(139,92,246,0.45)]"
       : "border-blue-500/60 shadow-[inset_0_-4px_0_0_rgba(59,130,246,0.45)]";
 
-  const platformClass =
-    item.contentType === "movie" ? "text-violet-400" : "text-blue-400";
+  const platformClass = getPlatformTextColorClass(
+    item.platformName,
+    item.contentType
+  );
 
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -926,6 +928,31 @@ function WatchlistCard({
       )}
     </div>
   );
+}
+
+function getPlatformTextColorClass(
+  platformName: string | null | undefined,
+  contentType: WatchlistItem["contentType"]
+) {
+  const normalized = platformName?.trim().toLowerCase() ?? "";
+
+  if (normalized.includes("netflix")) {
+    return "text-red-500";
+  }
+
+  if (normalized.includes("hulu")) {
+    return "text-green-400";
+  }
+
+  if (normalized.includes("hbo") || normalized === "max" || normalized.includes("hbo max")) {
+    return "text-purple-400";
+  }
+
+  if (normalized.includes("disney")) {
+    return "text-slate-300";
+  }
+
+  return contentType === "movie" ? "text-violet-400" : "text-blue-400";
 }
 
 function StatusBadge({
