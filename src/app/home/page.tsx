@@ -53,6 +53,8 @@ export default function HomePage() {
   const [rating, setRating] = useState("");
   const [notes, setNotes] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+  const [userInitial, setUserInitial] = useState("U");
+  const [userDisplayName, setUserDisplayName] = useState<string | null>(null);
 
   useEffect(() => {
     if (!auth.getToken()) {
@@ -132,6 +134,11 @@ export default function HomePage() {
 
     loadWatchlistItems();
   }, [router, statusFilter, typeFilter]);
+
+  useEffect(() => {
+    setUserInitial(auth.getUserInitial());
+    setUserDisplayName(auth.getUserDisplayName());
+  }, []);
 
   function itemMatchesFilters(item: WatchlistItem) {
     if (statusFilter !== "all" && item.status !== statusFilter) {
@@ -296,6 +303,17 @@ export default function HomePage() {
           </div>
 
           <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 rounded-full border border-slate-600 bg-slate-800/70 px-2 py-1.5">
+              <div
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-emerald-400/60 bg-emerald-500/15 text-sm font-semibold text-emerald-300"
+                aria-hidden="true"
+              >
+                {userInitial}
+              </div>
+              <span className="hidden pr-1 text-sm text-slate-200 sm:inline">
+                {userDisplayName ?? "User"}
+              </span>
+            </div>
             <button
               onClick={() => {
                 setFormError(null);
@@ -308,8 +326,9 @@ export default function HomePage() {
             </button>
             <button
               onClick={logout}
-              className="inline-flex items-center gap-2 rounded-full px-3 py-2 text-slate-300 hover:text-white hover:bg-slate-700/50 transition"
+              className="inline-flex items-center gap-2 rounded-full border border-slate-500 px-3 py-2 text-slate-100 hover:text-white hover:border-slate-300 hover:bg-slate-700/50 transition"
               aria-label="Log out"
+              title="Logout"
             >
               <LogOut size={18} />
               <span className="text-sm">Logout</span>
@@ -1039,7 +1058,7 @@ function EmptyState({ hasActiveFilters }: { hasActiveFilters: boolean }) {
       <div className="text-sm text-slate-300">
         {hasActiveFilters
           ? "No items match your current filters"
-          : "You haven't added anything yet"}
+          : "Add your first recommendation today!"}
       </div>
     </div>
   );
