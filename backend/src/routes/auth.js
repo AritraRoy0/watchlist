@@ -9,8 +9,16 @@ if (!secret) {
   throw new Error("JWT_SECRET is not set");
 }
 
-function issueToken(userId) {
-  return jwt.sign({ sub: userId }, secret, { expiresIn: "7d" });
+function issueToken(user) {
+  return jwt.sign(
+    {
+      sub: user.id,
+      email: user.email,
+      fullName: user.fullName ?? null,
+    },
+    secret,
+    { expiresIn: "7d" }
+  );
 }
 
 router.post("/register", async (req, res) => {
@@ -30,7 +38,11 @@ router.post("/register", async (req, res) => {
       "INSERT INTO users (email, full_name, password_hash) VALUES (?, ?, ?)",
       [email.toLowerCase(), fullName || null, passwordHash]
     );
-    const token = issueToken(result.insertId);
+    const token = issueToken({
+      id: result.insertId,
+      email: email.toLowerCase(),
+      fullName: typeof fullName === "string" && fullName.trim() ? fullName.trim() : null,
+    });
     return res.json({ token });
   } catch (err) {
     if (err?.code === "ER_DUP_ENTRY") {
@@ -49,7 +61,7 @@ router.post("/login", async (req, res) => {
 
   try {
     const [rows] = await pool.execute(
-      "SELECT id, password_hash FROM users WHERE email = ? LIMIT 1",
+      "SELECT id, email, full_name, password_hash FROM users WHERE email = ? LIMIT 1",
       [email.toLowerCase()]
     );
 
@@ -63,7 +75,11 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
-    const token = issueToken(user.id);
+    const token = issueToken({
+      id: user.id,
+      email: user.email,
+      fullName: user.full_name ?? null,
+    });
     return res.json({ token });
   } catch (err) {
     console.error("Login failed:", err);
