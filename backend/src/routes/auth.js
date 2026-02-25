@@ -18,15 +18,18 @@ router.post("/register", async (req, res) => {
   if (!email || !password) {
     return res.status(400).json({ error: "Email and password are required" });
   }
+  if (typeof password !== "string" || password.length < 8) {
+    return res
+      .status(400)
+      .json({ error: "Password must be at least 8 characters" });
+  }
 
   try {
     const passwordHash = await bcrypt.hash(password, 10);
-    console.log(1)
     const [result] = await pool.execute(
       "INSERT INTO users (email, full_name, password_hash) VALUES (?, ?, ?)",
       [email.toLowerCase(), fullName || null, passwordHash]
     );
-    console.log(2)
     const token = issueToken(result.insertId);
     return res.json({ token });
   } catch (err) {

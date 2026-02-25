@@ -30,6 +30,10 @@ export default function AuthPage() {
     setLoading(true);
 
     try {
+      if (mode === "signup" && password.length < 8) {
+        throw new Error("Password must be at least 8 characters");
+      }
+
       const result =
         mode === "login"
           ? await login({ email, password })
@@ -145,7 +149,8 @@ export default function AuthPage() {
               <input
                 type="password"
                 className={`${inputClass(Boolean(error))} pr-10`}
-                placeholder="Password (min 6 characters)"
+                placeholder="Password (min 8 characters)"
+                minLength={mode === "signup" ? 8 : undefined}
                 value={password}
                 onChange={(e) => {
                   if (error) setError(null);
